@@ -89,8 +89,7 @@ export default function LiteTariffs() {
       amount: String(missingRubles),
       returnTo: '/lite/tariffs',
     });
-    // TODO(F): when /lite/balance is built, switch to a Lite top-up flow.
-    navigate(`/balance/top-up?${params.toString()}`);
+    navigate(`/lite/balance/top-up?${params.toString()}`);
   };
 
   // Two purchase endpoints share { success, message }; onSuccess only reads

@@ -1,9 +1,5 @@
-import { LiteLayout } from '@/components/lite/LiteLayout';
+import { Navigate } from 'react-router';
 
 export default function LiteSupport() {
-  return (
-    <LiteLayout variant={{ title: 'Поддержка' }}>
-      <div className="py-12 text-center text-subo-textSoft">Скоро…</div>
-    </LiteLayout>
-  );
+  return <Navigate to="/support" replace />;
 }
