@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth';
@@ -9,22 +9,12 @@ import { FooterLinks } from './FooterLinks';
 
 type LiteLayoutProps = {
   variant: 'home' | { title: string };
-  onMenuClick?: () => void;
   // Used when the back button has no history to pop (deep link, fresh tab).
   backFallback?: string;
   children: ReactNode;
 };
 
-const defaultMenuClick = () => {
-  console.log('[LiteLayout] menu opened (no handler wired yet)');
-};
-
-export function LiteLayout({
-  variant,
-  onMenuClick,
-  backFallback = '/lite',
-  children,
-}: LiteLayoutProps) {
+export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLayoutProps) {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const { data: balanceData } = useQuery({
@@ -32,6 +22,12 @@ export function LiteLayout({
     queryFn: balanceApi.getBalance,
     staleTime: API.BALANCE_STALE_TIME_MS,
   });
+
+  useEffect(() => {
+    const baseTitle = 'SUBO VPN';
+    const pageTitle = variant === 'home' ? baseTitle : `${variant.title} · ${baseTitle}`;
+    document.title = pageTitle;
+  }, [variant]);
 
   const initials =
     (
@@ -55,7 +51,6 @@ export function LiteLayout({
           <LiteHeader
             mode="home"
             user={{ initials, balance }}
-            onMenuClick={onMenuClick ?? defaultMenuClick}
             onBalanceClick={handleBalanceClick}
           />
         ) : (

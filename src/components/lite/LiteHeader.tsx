@@ -1,13 +1,12 @@
 import { Avatar } from './Avatar';
 import { SuboLogo } from './SuboLogo';
 import { BalanceChip } from './BalanceChip';
-import { ArrowIcon, BurgerIcon } from './icons';
+import { ArrowIcon } from './icons';
 
 type LiteHeaderProps =
   | {
       mode: 'home';
       user: { initials: string; balance: number };
-      onMenuClick: () => void;
       onBalanceClick: () => void;
     }
   | {
@@ -53,17 +52,7 @@ export function LiteHeader(props: LiteHeaderProps) {
 
       <div className="flex items-center justify-end gap-1.5">
         {props.mode === 'home' ? (
-          <>
-            <BalanceChip amount={props.user.balance} onClick={props.onBalanceClick} />
-            <button
-              type="button"
-              onClick={props.onMenuClick}
-              aria-label="Меню"
-              className="flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-[10px] border-none bg-transparent p-0 text-subo-textSoft"
-            >
-              <BurgerIcon />
-            </button>
-          </>
+          <BalanceChip amount={props.user.balance} onClick={props.onBalanceClick} />
         ) : (
           <BalanceChip amount={props.balance} onClick={props.onBalanceClick} />
         )}

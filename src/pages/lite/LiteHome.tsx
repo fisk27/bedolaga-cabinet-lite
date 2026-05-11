@@ -160,10 +160,9 @@ export default function LiteHome() {
   const onConnect = () => navigate('/lite/connect');
   const onRenew = () => navigate('/lite/renew');
   const onTariffChange = () => navigate('/lite/tariffs');
-  const onMenuClick = () => console.log('[menu] open');
 
   return (
-    <LiteLayout variant="home" onMenuClick={onMenuClick}>
+    <LiteLayout variant="home">
       {liteState === 'loading' && (
         <div className="flex flex-col gap-3 pb-2 pt-1.5">
           <div className="h-64 animate-pulse rounded-3xl border border-subo-hairline bg-subo-surface" />
