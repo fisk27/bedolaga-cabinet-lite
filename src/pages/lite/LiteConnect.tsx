@@ -109,11 +109,15 @@ export default function LiteConnect() {
     [connectionLink, appConfig],
   );
 
-  const happUrl =
-    connectionLink?.happ_redirect_link ||
-    connectionLink?.happ_link ||
-    connectionLink?.happ_cryptolink ||
-    null;
+  const happUrl = useMemo(() => {
+    if (!canonicalUrl) return null;
+    // happ:// schemes don't open from Telegram WebView directly — wrap in our /happ-redirect HTTPS bouncer.
+    if (!/^https?:\/\//i.test(canonicalUrl)) {
+      return `${window.location.origin}/happ-redirect?to=${encodeURIComponent(canonicalUrl)}`;
+    }
+    // Plain HTTPS subscription URL — open directly.
+    return canonicalUrl;
+  }, [canonicalUrl]);
 
   const handleCopy = async () => {
     if (!canonicalUrl) return;

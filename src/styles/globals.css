@@ -1090,6 +1090,73 @@ img.twemoji {
     @apply whitespace-pre-line;
   }
 
+  /* Lite-theme prose styles — used by /lite/info detail pages */
+  .prose-lite {
+    @apply leading-relaxed text-subo-text;
+  }
+  .prose-lite h1,
+  .prose-lite h2,
+  .prose-lite h3,
+  .prose-lite h4,
+  .prose-lite h5,
+  .prose-lite h6 {
+    @apply font-semibold text-subo-text first:mt-0;
+  }
+  .prose-lite h1 {
+    @apply mb-4 mt-6 text-[22px];
+  }
+  .prose-lite h2 {
+    @apply mb-3 mt-5 text-[18px];
+  }
+  .prose-lite h3 {
+    @apply mb-2 mt-4 text-[16px];
+  }
+  .prose-lite p {
+    @apply mb-3 last:mb-0;
+  }
+  .prose-lite a {
+    @apply text-subo-amber underline underline-offset-2;
+  }
+  .prose-lite ul,
+  .prose-lite ol {
+    @apply mb-3 list-inside space-y-1 pl-2;
+  }
+  .prose-lite ul {
+    @apply list-disc;
+  }
+  .prose-lite ol {
+    @apply list-decimal;
+  }
+  .prose-lite li::marker {
+    @apply text-subo-amber;
+  }
+  .prose-lite strong,
+  .prose-lite b {
+    @apply font-semibold text-subo-text;
+  }
+  .prose-lite em,
+  .prose-lite i {
+    @apply italic text-subo-textSoft;
+  }
+  .prose-lite blockquote {
+    @apply my-3 border-l-2 border-subo-amber/50 pl-3 italic text-subo-textSoft;
+  }
+  .prose-lite code {
+    @apply rounded bg-subo-surface px-1.5 py-0.5 font-mono text-[13px] text-subo-amber;
+  }
+  .prose-lite pre {
+    @apply mb-3 overflow-x-auto rounded-xl bg-subo-surface p-3 font-mono text-[13px] text-subo-text;
+  }
+  .prose-lite pre code {
+    @apply bg-transparent p-0 text-subo-text;
+  }
+  .prose-lite hr {
+    @apply my-5 border-subo-hairline;
+  }
+  .prose-lite img {
+    @apply my-3 h-auto max-w-full rounded-xl;
+  }
+
   .max-w-none {
     max-width: none;
   }
