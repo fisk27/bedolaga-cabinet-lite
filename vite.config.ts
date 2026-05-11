@@ -22,8 +22,9 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'https://webhook3.subovpn.com',
         changeOrigin: true,
+        secure: true,
         // Strip /api prefix: /api/cabinet/auth -> /cabinet/auth
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

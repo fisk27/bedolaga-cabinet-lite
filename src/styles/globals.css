@@ -1736,3 +1736,11 @@ input[type='checkbox']:hover:not(:checked) {
     animation: none;
   }
 }
+
+/* SUBO VPN: disable pulse + shimmer when the user prefers reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-subo-pulse,
+  .animate-subo-shimmer {
+    animation: none !important;
+  }
+}

@@ -40,6 +40,8 @@ import DeepLinkRedirect from './pages/DeepLinkRedirect';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
 import OAuthCallback from './pages/OAuthCallback';
+// SUBO Lite home — public for now (auth wiring comes in A3)
+import LiteHome from './pages/lite/LiteHome';
 
 // Dashboard - load eagerly (default route, LCP-critical)
 import Dashboard from './pages/Dashboard';
@@ -71,6 +73,14 @@ const TopUpResult = lazyWithRetry(() => import('./pages/TopUpResult'));
 const ConnectedAccounts = lazyWithRetry(() => import('./pages/ConnectedAccounts'));
 const LinkTelegramCallback = lazyWithRetry(() => import('./pages/LinkTelegramCallback'));
 const MergeAccounts = lazyWithRetry(() => import('./pages/MergeAccounts'));
+
+// Lite cabinet inner screens — A2 stubs, lazy (auth + real APIs in A3)
+const LiteTariffs = lazyWithRetry(() => import('./pages/lite/LiteTariffs'));
+const LiteRenew = lazyWithRetry(() => import('./pages/lite/LiteRenew'));
+const LiteConnect = lazyWithRetry(() => import('./pages/lite/LiteConnect'));
+const LiteBalance = lazyWithRetry(() => import('./pages/lite/LiteBalance'));
+const LiteSupport = lazyWithRetry(() => import('./pages/lite/LiteSupport'));
+const LiteInfo = lazyWithRetry(() => import('./pages/lite/LiteInfo'));
 
 // Admin pages - lazy load (only for admins)
 const AdminPanel = lazyWithRetry(() => import('./pages/AdminPanel'));
@@ -280,6 +290,75 @@ function App() {
                 <AutoLogin />
               </LazyPage>
             </ErrorBoundary>
+          }
+        />
+        {/* Lite cabinet — auth-gated; LiteLayout is the in-page shell so we skip Layout */}
+        <Route
+          path="/lite"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LiteHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lite/tariffs"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LazyPage>
+                <LiteTariffs />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lite/renew"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LazyPage>
+                <LiteRenew />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lite/connect"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LazyPage>
+                <LiteConnect />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lite/balance"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LazyPage>
+                <LiteBalance />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lite/support"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LazyPage>
+                <LiteSupport />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lite/info"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LazyPage>
+                <LiteInfo />
+              </LazyPage>
+            </ProtectedRoute>
           }
         />
 

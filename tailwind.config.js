@@ -101,6 +101,21 @@ export default {
           900: withOpacity('--color-error-900'),
           950: withOpacity('--color-error-950'),
         },
+        // SUBO VPN design system (warm dark + amber). Namespaced to coexist
+        // with the existing CSS-variable-driven dark/champagne/accent palette.
+        subo: {
+          bg: '#0F0E0A',
+          surface: '#1C1A14',
+          surface2: '#23201A',
+          hairline: 'rgba(250, 250, 249, 0.07)',
+          text: '#FAFAF9',
+          textSoft: '#A8A29E',
+          textMute: '#78716C',
+          amber: '#F2C12E',
+          amberDeep: '#C99A1F',
+          amberInk: '#1A1605',
+          green: '#7EC264',
+        },
       },
       fontFamily: {
         sans: [
@@ -114,6 +129,9 @@ export default {
         ],
         display: ['Outfit', 'Manrope', 'system-ui', 'sans-serif'],
         mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
+        // SUBO VPN fonts: handwritten wordmark + Inter UI stack
+        handwritten: ['Caveat', 'Brush Script MT', 'cursive'],
+        subo: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
       },
       borderRadius: {
         bento: '24px',
@@ -180,6 +198,10 @@ export default {
         'unlimited-flow': 'unlimitedFlow 3s ease-in-out infinite',
         'unlimited-pulse': 'unlimitedPulse 2s ease-in-out infinite',
         'trial-glow': 'trialGlow 3s ease-in-out infinite',
+        // SUBO VPN: pulsing ring on the expiring-state "Продлить сейчас" CTA
+        // and the soft amber wash overlay on the expiring hero card.
+        'subo-pulse': 'suboPulse 2.4s ease-out infinite',
+        'subo-shimmer': 'suboShimmer 3.2s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -275,6 +297,17 @@ export default {
         trialGlow: {
           '0%, 100%': { boxShadow: '0 0 15px rgba(var(--color-accent-400), 0.06)' },
           '50%': { boxShadow: '0 0 30px rgba(var(--color-accent-400), 0.12)' },
+        },
+        // SUBO pulse: expanding amber ring fading out, looped.
+        suboPulse: {
+          '0%': { boxShadow: '0 0 0 0 rgba(242, 193, 46, 0.55)' },
+          '50%': { boxShadow: '0 0 0 14px rgba(242, 193, 46, 0)' },
+          '100%': { boxShadow: '0 0 0 0 rgba(242, 193, 46, 0)' },
+        },
+        // SUBO shimmer: gentle opacity breathing on the amber wash overlay.
+        suboShimmer: {
+          '0%, 100%': { opacity: '0.9' },
+          '50%': { opacity: '0.45' },
         },
       },
       transitionTimingFunction: {

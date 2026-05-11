@@ -1,0 +1,328 @@
+import { useState, useEffect, type ReactNode } from 'react';
+import { useNavigate } from 'react-router';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { subscriptionApi } from '@/api/subscription';
+import { API } from '@/config/constants';
+import type { TariffsPurchaseOptions } from '@/types';
+import { LiteLayout } from '@/components/lite/LiteLayout';
+import { TariffOption } from '@/components/lite/TariffOption';
+import { PeriodSelector } from '@/components/lite/PeriodSelector';
+import { PrimaryButton } from '@/components/lite/PrimaryButton';
+
+function LoadingSkeleton() {
+  return (
+    <div className="flex flex-col gap-2">
+      {[0, 1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="h-[88px] animate-pulse rounded-2xl border border-subo-hairline bg-subo-surface"
+        />
+      ))}
+    </div>
+  );
+}
+
+export default function LiteTariffs() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [selectedTariffId, setSelectedTariffId] = useState<number | null>(null);
+  const [selectedDays, setSelectedDays] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['purchase-options'],
+    queryFn: () => subscriptionApi.getPurchaseOptions(),
+  });
+
+  // Identify the user's current subscription so previews and purchases for an
+  // active subscriber are treated as a switch/extension, not a fresh purchase.
+  const { data: subscriptionsList } = useQuery({
+    queryKey: ['subscriptions-list'],
+    queryFn: () => subscriptionApi.getSubscriptions(),
+    staleTime: 60_000,
+  });
+
+  const { data: subscriptionResponse } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: () => subscriptionApi.getSubscription(),
+    enabled: !(subscriptionsList?.multi_tariff_enabled ?? false),
+    retry: false,
+    staleTime: API.BALANCE_STALE_TIME_MS,
+  });
+
+  const activeSubscription = subscriptionResponse?.subscription ?? null;
+  // TODO(multi-tariff): mirror LiteHome — for now treat the first list item as
+  // the primary subscription for the switch context.
+  const multiFirst =
+    (subscriptionsList?.multi_tariff_enabled ?? false)
+      ? (subscriptionsList?.subscriptions?.[0] ?? null)
+      : null;
+  const currentSubscriptionId =
+    activeSubscription && !activeSubscription.is_expired
+      ? activeSubscription.id
+      : (multiFirst?.id ?? undefined);
+  const currentTariffId = activeSubscription?.tariff_id ?? multiFirst?.tariff_id ?? null;
+
+  // Derived selections — kept at component top so the preview query below
+  // can read them without violating the rules of hooks.
+  const tariffsData: TariffsPurchaseOptions | null =
+    data && data.sales_mode === 'tariffs' ? data : null;
+  const selectedTariff = tariffsData?.tariffs.find((t) => t.id === selectedTariffId) ?? null;
+  const selectedPeriod = selectedTariff?.periods.find((p) => p.days === selectedDays) ?? null;
+
+  const {
+    data: preview,
+    isFetching: previewLoading,
+    isError: previewError,
+  } = useQuery({
+    queryKey: ['lite-purchase-preview', selectedTariffId, selectedDays, currentSubscriptionId],
+    queryFn: () =>
+      subscriptionApi.previewPurchase({ period_days: selectedDays! }, currentSubscriptionId),
+    enabled: !!selectedTariff && !!selectedDays,
+    retry: false,
+    staleTime: 30_000,
+  });
+
+  const navigateToTopUp = (missingKopeks: number) => {
+    const missingRubles = Math.ceil(missingKopeks / 100);
+    const params = new URLSearchParams({
+      amount: String(missingRubles),
+      returnTo: '/lite/tariffs',
+    });
+    // TODO(F): when /lite/balance is built, switch to a Lite top-up flow.
+    navigate(`/balance/top-up?${params.toString()}`);
+  };
+
+  // Two purchase endpoints share { success, message }; onSuccess only reads
+  // those, so we narrow TData to the common subset. TError is the structural
+  // axios error shape we already pattern-match in onError.
+  const purchaseMutation = useMutation<
+    { success: boolean; message: string },
+    {
+      response?: {
+        data?: {
+          detail?: string | { code?: string; missing_amount?: number };
+        };
+      };
+    },
+    void
+  >({
+    // For a switch/extension on an active subscription we use submitPurchase
+    // (accepts subscription_id; backend prorates). For a fresh purchase we use
+    // purchaseTariff (no sub_id; carries tariff_id explicitly). See summary
+    // for the rationale.
+    mutationFn: () => {
+      if (currentSubscriptionId !== undefined) {
+        return subscriptionApi.submitPurchase(
+          { period_days: selectedDays! },
+          currentSubscriptionId,
+        );
+      }
+      return subscriptionApi.purchaseTariff(selectedTariff!.id, selectedDays!);
+    },
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['subscription'] });
+        queryClient.invalidateQueries({ queryKey: ['subscriptions-list'] });
+        queryClient.invalidateQueries({ queryKey: ['balance'] });
+        navigate('/lite');
+      } else {
+        setError(result.message || 'Не удалось оформить подписку');
+      }
+    },
+    onError: (err: {
+      response?: {
+        data?: {
+          detail?: string | { code?: string; missing_amount?: number };
+        };
+      };
+    }) => {
+      const detail = err.response?.data?.detail;
+      if (
+        typeof detail === 'object' &&
+        detail?.code === 'insufficient_funds' &&
+        detail.missing_amount
+      ) {
+        navigateToTopUp(detail.missing_amount);
+      } else {
+        setError(typeof detail === 'string' ? detail : 'Ошибка при покупке');
+      }
+    },
+  });
+
+  // Clear stale error whenever the selection changes.
+  useEffect(() => {
+    setError(null);
+  }, [selectedTariffId, selectedDays]);
+
+  const handleSelectTariff = (id: number) => {
+    setSelectedTariffId(id);
+    const t = tariffsData?.tariffs.find((x) => x.id === id);
+    setSelectedDays(t?.periods[0]?.days ?? null);
+  };
+
+  // Adaptive CTA — purchase when balance is enough, otherwise route to top-up.
+  const needsTopUp = !!preview && !preview.can_purchase && (preview.missing_amount_kopeks ?? 0) > 0;
+
+  const ctaLabel = purchaseMutation.isPending
+    ? 'Оформляем...'
+    : previewLoading && !preview
+      ? 'Подсчитываем...'
+      : needsTopUp
+        ? 'Пополнить и купить'
+        : 'Перейти к оплате';
+
+  const ctaDisabled =
+    !selectedTariff || !selectedDays || purchaseMutation.isPending || (previewLoading && !preview);
+
+  const onCtaClick = () => {
+    if (needsTopUp) {
+      navigateToTopUp(preview!.missing_amount_kopeks);
+    } else {
+      purchaseMutation.mutate();
+    }
+  };
+
+  const renderPreview = (): ReactNode => {
+    // Errored: silently fall back to the period's own labels so the page
+    // still communicates a price.
+    if (previewError && selectedPeriod) {
+      return (
+        <div className="text-center">
+          <div className="font-subo text-[28px] font-semibold tracking-[-0.02em] text-subo-amber">
+            {selectedPeriod.price_label}
+          </div>
+          <div className="mt-0.5 font-subo text-[13px] text-subo-textMute">
+            {selectedPeriod.price_per_month_label} / мес
+          </div>
+        </div>
+      );
+    }
+
+    // Loading without prior data: subtle placeholder.
+    if (previewLoading && !preview) {
+      return (
+        <div className="text-center font-subo text-[14px] text-subo-textSoft">Подсчитываем…</div>
+      );
+    }
+
+    if (!preview) return null;
+
+    if (preview.can_purchase) {
+      return (
+        <div className="text-center">
+          <div className="font-subo text-[28px] font-semibold tracking-[-0.02em] text-subo-amber">
+            К оплате: {preview.total_price_label}
+          </div>
+          <div className="mt-0.5 font-subo text-[13px] text-subo-textSoft">
+            В месяц: {preview.per_month_price_label}
+          </div>
+        </div>
+      );
+    }
+
+    // Calm amber warning — not red — when balance is short.
+    if (preview.missing_amount_kopeks > 0) {
+      return (
+        <div className="flex flex-col gap-1.5 rounded-2xl border border-subo-amber/30 bg-subo-amber/[0.08] px-4 py-3 text-center">
+          <div className="font-subo text-[14px] font-medium text-subo-amber">
+            Не хватает {preview.missing_amount_label ?? '—'} на балансе
+          </div>
+          <div className="font-subo text-[13px] text-subo-textMute">
+            К оплате: {preview.total_price_label}
+          </div>
+        </div>
+      );
+    }
+
+    if (preview.status_message) {
+      return (
+        <div className="rounded-2xl border border-subo-amber/30 bg-subo-amber/[0.08] px-4 py-3 text-center font-subo text-[14px] font-medium text-subo-amber">
+          {preview.status_message}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  let body: ReactNode;
+  if (isLoading) {
+    body = <LoadingSkeleton />;
+  } else if (!data) {
+    body = (
+      <div className="py-12 text-center font-subo text-[14px] text-subo-textSoft">
+        Не удалось загрузить тарифы
+      </div>
+    );
+  } else if (data.sales_mode === 'classic') {
+    // TODO(C+): build a Lite-native classic flow if SALES_MODE=classic users land here.
+    body = (
+      <div className="flex flex-col gap-4 py-6">
+        <p className="text-center font-subo text-[14px] leading-[1.45] text-subo-textSoft">
+          Сейчас доступна только классическая покупка — откройте полный кабинет для подробного
+          выбора параметров.
+        </p>
+        <PrimaryButton onClick={() => navigate('/subscription/purchase')}>
+          Открыть кабинет
+        </PrimaryButton>
+      </div>
+    );
+  } else if (data.tariffs.length === 0) {
+    body = (
+      <div className="py-12 text-center font-subo text-[14px] text-subo-textSoft">
+        {data.all_tariffs_purchased ? 'Все тарифы уже куплены' : 'Сейчас нет доступных тарифов'}
+      </div>
+    );
+  } else {
+    body = (
+      <>
+        <p className="text-center font-subo text-[13px] text-subo-textSoft">Выберите тариф</p>
+
+        <div className="flex flex-col gap-2">
+          {data.tariffs.map((t) => (
+            <TariffOption
+              key={t.id}
+              tariff={t}
+              selected={selectedTariffId === t.id}
+              onSelect={() => handleSelectTariff(t.id)}
+              isCurrent={
+                t.id === data.current_tariff_id ||
+                (currentTariffId !== null && t.id === currentTariffId)
+              }
+            />
+          ))}
+        </div>
+
+        {selectedTariff && selectedTariff.periods.length > 0 && (
+          <div className="flex flex-col gap-3">
+            <PeriodSelector
+              periods={selectedTariff.periods}
+              selectedDays={selectedDays}
+              onChange={setSelectedDays}
+            />
+            {renderPreview()}
+          </div>
+        )}
+
+        <div className="mt-2">
+          <PrimaryButton onClick={onCtaClick} disabled={ctaDisabled}>
+            {ctaLabel}
+          </PrimaryButton>
+        </div>
+
+        {error && (
+          <div className="mt-3 rounded-xl border border-error-500/30 bg-error-500/10 px-4 py-3 text-sm text-error-400">
+            {error}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <LiteLayout variant={{ title: 'Тарифы' }}>
+      <div className="flex flex-col gap-5 pb-2 pt-3">{body}</div>
+    </LiteLayout>
+  );
+}
