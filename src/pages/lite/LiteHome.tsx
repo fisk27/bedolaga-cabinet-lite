@@ -160,6 +160,7 @@ export default function LiteHome() {
   const onConnect = () => navigate('/lite/connect');
   const onRenew = () => navigate('/lite/renew');
   const onTariffChange = () => navigate('/lite/tariffs');
+  const onDevices = () => navigate('/lite/devices');
 
   return (
     <LiteLayout variant="home">
@@ -192,7 +193,13 @@ export default function LiteHome() {
             onRenew={onRenew}
           />
           <TrafficCard usedGb={subscription.trafficUsedGb} totalGb={subscription.trafficLimitGb} />
-          <DeviceMini used={devicesData?.total ?? 0} total={subscription.deviceLimit} />
+          <button
+            type="button"
+            onClick={onDevices}
+            className="block w-full cursor-pointer border-none bg-transparent p-0 text-left"
+          >
+            <DeviceMini used={devicesData?.total ?? 0} total={subscription.deviceLimit} />
+          </button>
           <TariffCard
             name={subscription.tariffName}
             period={calcPeriod(subscription.startDate, subscription.endDate)}
@@ -210,7 +217,13 @@ export default function LiteHome() {
             onRenew={onRenew}
           />
           <TrafficCard usedGb={subscription.trafficUsedGb} totalGb={subscription.trafficLimitGb} />
-          <DeviceMini used={devicesData?.total ?? 0} total={subscription.deviceLimit} />
+          <button
+            type="button"
+            onClick={onDevices}
+            className="block w-full cursor-pointer border-none bg-transparent p-0 text-left"
+          >
+            <DeviceMini used={devicesData?.total ?? 0} total={subscription.deviceLimit} />
+          </button>
           <TariffCard
             name={subscription.tariffName}
             period={calcPeriod(subscription.startDate, subscription.endDate)}

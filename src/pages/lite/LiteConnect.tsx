@@ -162,7 +162,11 @@ export default function LiteConnect() {
       <div className="flex flex-col items-center gap-6">
         {happUrl && (
           <div className="flex w-full flex-col items-center gap-2">
-            <PrimaryButton onClick={() => window.open(happUrl, '_blank', 'noopener')}>
+            <PrimaryButton
+              onClick={() => {
+                window.location.href = happUrl;
+              }}
+            >
               Открыть в Happ
             </PrimaryButton>
             <p className="text-center font-subo text-[13px] leading-[1.4] text-subo-textSoft">

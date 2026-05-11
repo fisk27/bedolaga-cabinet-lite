@@ -78,6 +78,7 @@ const MergeAccounts = lazyWithRetry(() => import('./pages/MergeAccounts'));
 const LiteTariffs = lazyWithRetry(() => import('./pages/lite/LiteTariffs'));
 const LiteRenew = lazyWithRetry(() => import('./pages/lite/LiteRenew'));
 const LiteConnect = lazyWithRetry(() => import('./pages/lite/LiteConnect'));
+const LiteDevices = lazyWithRetry(() => import('./pages/lite/LiteDevices'));
 const LiteBalance = lazyWithRetry(() => import('./pages/lite/LiteBalance'));
 const LiteBalanceTopUp = lazyWithRetry(() => import('./pages/lite/LiteBalanceTopUp'));
 const LiteSupport = lazyWithRetry(() => import('./pages/lite/LiteSupport'));
@@ -329,6 +330,16 @@ function App() {
             <ProtectedRoute withLayout={false}>
               <LazyPage>
                 <LiteConnect />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lite/devices"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LazyPage>
+                <LiteDevices />
               </LazyPage>
             </ProtectedRoute>
           }
