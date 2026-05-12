@@ -9,63 +9,44 @@ import { LiteLayout } from '@/components/lite/LiteLayout';
 import { PrimaryButton } from '@/components/lite/PrimaryButton';
 import { GhostButton } from '@/components/lite/GhostButton';
 
-const PLATFORM_LABELS: Record<string, { title: string; subtitle?: string }> = {
-  ios: { title: 'iOS', subtitle: 'iPhone, iPad' },
-  android: { title: 'Android' },
-  macos: { title: 'macOS', subtitle: 'Mac' },
-  windows: { title: 'Windows' },
-  pc: { title: 'Linux', subtitle: 'PC' },
+type Platform = 'ios' | 'android' | 'macos' | 'windows';
+
+const PLATFORM_ORDER: Platform[] = ['ios', 'android', 'macos', 'windows'];
+
+const PLATFORM_LABELS: Record<Platform, string> = {
+  ios: 'iOS (iPhone, iPad)',
+  android: 'Android',
+  macos: 'macOS',
+  windows: 'Windows',
 };
 
-const PLATFORM_ORDER = ['ios', 'android', 'macos', 'windows', 'pc'];
+const detectPlatform = (): Platform => {
+  const tgPlatform = window.Telegram?.WebApp?.platform;
+  if (tgPlatform === 'ios') return 'ios';
+  if (tgPlatform === 'android') return 'android';
+  if (tgPlatform === 'macos') return 'macos';
+  if (tgPlatform === 'tdesktop' || tgPlatform === 'web') return 'windows';
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent.toLowerCase() : '';
+  if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+  if (/android/.test(ua)) return 'android';
+  if (/macintosh|mac os x/.test(ua)) return 'macos';
+  return 'windows';
+};
 
-type PlatformInfo = { name: string; icon: string; link: string };
-
-function DownloadGrid({ platforms }: { platforms: Record<string, PlatformInfo> }) {
-  const entries = Object.entries(platforms).filter(([, p]) => p?.link);
-  const sorted = entries.sort(([a], [b]) => {
-    const ai = PLATFORM_ORDER.indexOf(a);
-    const bi = PLATFORM_ORDER.indexOf(b);
-    if (ai !== -1 && bi !== -1) return ai - bi;
-    if (ai !== -1) return -1;
-    if (bi !== -1) return 1;
-    return a.localeCompare(b);
-  });
-
-  if (sorted.length === 0) return null;
-
-  return (
-    <div className="flex w-full flex-col gap-3">
-      <p className="font-subo text-[13px] text-subo-textSoft">Нет приложения?</p>
-      <div className="grid grid-cols-2 gap-2">
-        {sorted.map(([key, platform]) => {
-          const label = PLATFORM_LABELS[key];
-          const title = label?.title ?? platform.name;
-          const subtitle = label?.subtitle;
-          return (
-            <a
-              key={key}
-              href={platform.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-col items-center gap-2 rounded-2xl border border-subo-hairline bg-subo-surface2 p-4 transition-colors hover:bg-subo-text/[0.04]"
-            >
-              <span className="font-subo text-[14px] font-semibold text-subo-text">{title}</span>
-              {subtitle && (
-                <span className="font-subo text-[12px] text-subo-textSoft">{subtitle}</span>
-              )}
-            </a>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+const openExternal = (url: string) => {
+  const tg = window.Telegram?.WebApp;
+  if (tg && typeof tg.openLink === 'function') {
+    tg.openLink(url, { try_instant_view: false });
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+};
 
 export default function LiteConnect() {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
 
   const { data: multiSubData, isLoading: multiSubLoading } = useQuery({
     queryKey: ['subscriptions-list'],
@@ -161,9 +142,15 @@ export default function LiteConnect() {
     }
   };
 
-  const hasDownloads =
-    downloads?.happ_enabled === true &&
-    Object.values(downloads.platforms ?? {}).some((p) => p?.link);
+  const detectedPlatform = useMemo<Platform>(() => detectPlatform(), []);
+  const platformsWithLink = useMemo<Platform[]>(() => {
+    if (!downloads || downloads.happ_enabled !== true) return [];
+    return PLATFORM_ORDER.filter((p) => downloads.platforms?.[p]?.link);
+  }, [downloads]);
+  const primaryPlatform: Platform | null = platformsWithLink.includes(detectedPlatform)
+    ? detectedPlatform
+    : (platformsWithLink[0] ?? null);
+  const otherPlatforms = platformsWithLink.filter((p) => p !== primaryPlatform);
 
   let body: ReactNode;
   if (isResolvingSub || (hasSubscription && linkLoading)) {
@@ -190,29 +177,74 @@ export default function LiteConnect() {
     );
   } else {
     body = (
-      <div className="flex flex-col items-center gap-6">
-        {happUrl && (
-          <div className="flex w-full flex-col items-center gap-2">
-            <PrimaryButton onClick={openHapp}>Открыть в Happ</PrimaryButton>
-            <p className="text-center font-subo text-[13px] leading-[1.4] text-subo-textSoft">
-              Если приложение установлено — подписка добавится автоматически
-            </p>
-          </div>
+      <div className="flex flex-col gap-7">
+        <p className="font-subo text-[14px] leading-[1.5] text-subo-textSoft">
+          Для работы VPN нужно приложение Happ. Установите его и подключитесь.
+        </p>
+
+        {primaryPlatform && (
+          <section>
+            <div className="mb-3 font-subo text-[14px] uppercase tracking-[0.06em] text-subo-textSoft">
+              1. Установите приложение Happ
+            </div>
+            <div className="flex flex-col gap-3">
+              <PrimaryButton
+                onClick={() => openExternal(downloads!.platforms[primaryPlatform]!.link)}
+              >
+                Скачать для {PLATFORM_LABELS[primaryPlatform]}
+              </PrimaryButton>
+              {otherPlatforms.length > 0 && (
+                <div className="mt-1 flex flex-col items-center gap-2">
+                  <p className="font-subo text-[13px] text-subo-textSoft">Другая платформа?</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {otherPlatforms.map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => openExternal(downloads!.platforms[p]!.link)}
+                        className="cursor-pointer rounded-full border border-subo-hairline bg-transparent px-3.5 py-1.5 font-subo text-[13px] text-subo-textSoft transition-colors hover:bg-subo-hairline"
+                      >
+                        {PLATFORM_LABELS[p]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
         )}
 
-        <div className="flex w-full flex-col items-center gap-3">
-          <div className="rounded-2xl bg-white p-5">
-            <QRCodeSVG value={canonicalUrl} size={240} level="M" includeMargin={false} />
+        <section>
+          <div className="mb-3 font-subo text-[14px] uppercase tracking-[0.06em] text-subo-textSoft">
+            2. Подключитесь
           </div>
-          <p className="text-center font-subo text-[13px] text-subo-textSoft">
-            Или отсканируйте QR в Happ
-          </p>
-          <GhostButton onClick={handleCopy}>
-            {copyError ? 'Ошибка' : copied ? 'Скопировано ✓' : 'Скопировать ссылку'}
-          </GhostButton>
-        </div>
-
-        {hasDownloads && <DownloadGrid platforms={downloads!.platforms} />}
+          <div className="flex flex-col gap-3">
+            {happUrl && (
+              <div className="flex flex-col items-center gap-2">
+                <PrimaryButton onClick={openHapp}>Открыть в Happ</PrimaryButton>
+                <p className="text-center font-subo text-[13px] leading-[1.4] text-subo-textSoft">
+                  Если приложение установлено, подписка добавится автоматически
+                </p>
+              </div>
+            )}
+            <GhostButton onClick={() => setQrOpen((o) => !o)}>
+              {qrOpen ? 'Скрыть QR код' : 'Показать QR код'}
+            </GhostButton>
+            {qrOpen && (
+              <div className="flex flex-col items-center gap-2">
+                <div className="rounded-2xl bg-white p-5">
+                  <QRCodeSVG value={canonicalUrl} size={240} level="M" includeMargin={false} />
+                </div>
+                <p className="text-center font-subo text-[13px] text-subo-textSoft">
+                  Отсканируйте QR в Happ
+                </p>
+              </div>
+            )}
+            <GhostButton onClick={handleCopy}>
+              {copyError ? 'Ошибка' : copied ? 'Скопировано ✓' : 'Скопировать ссылку'}
+            </GhostButton>
+          </div>
+        </section>
       </div>
     );
   }

@@ -18,6 +18,7 @@ interface TelegramWebAppGlobal {
   onEvent?: (event: string, callback: () => void) => void;
   offEvent?: (event: string, callback: () => void) => void;
   openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
+  platform?: string;
   initData?: string;
   initDataUnsafe?: {
     user?: {

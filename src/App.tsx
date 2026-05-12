@@ -611,9 +611,11 @@ function App() {
           path="/info"
           element={
             <ProtectedRoute>
-              <LazyPage>
-                <Info />
-              </LazyPage>
+              <TelegramRedirect>
+                <LazyPage>
+                  <Info />
+                </LazyPage>
+              </TelegramRedirect>
             </ProtectedRoute>
           }
         />

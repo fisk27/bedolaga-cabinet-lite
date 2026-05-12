@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth';
+import { useBranding } from '@/hooks/useBranding';
 import { balanceApi } from '@/api/balance';
 import { API } from '@/config/constants';
 import { LiteHeader } from './LiteHeader';
@@ -18,6 +19,8 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
+  // useBranding also applies the admin-uploaded favicon to <link rel="icon"> via its own effect.
+  const { appName } = useBranding();
   const { data: balanceData } = useQuery({
     queryKey: ['balance'],
     queryFn: balanceApi.getBalance,
@@ -25,11 +28,11 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
   });
 
   const titleSuffix = variant === 'home' ? null : variant.title;
+  const baseTitle = appName || 'SUBO VPN';
 
   useEffect(() => {
-    const baseTitle = 'SUBO VPN';
     document.title = titleSuffix === null ? baseTitle : `${titleSuffix} · ${baseTitle}`;
-  }, [titleSuffix]);
+  }, [titleSuffix, baseTitle]);
 
   // Track our own Lite navigation depth. window.history.length is polluted by
   // the Telegram bot's preceding entries, so back can fall out of the WebView.
