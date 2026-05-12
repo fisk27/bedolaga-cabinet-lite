@@ -20,13 +20,12 @@ type LiteHeaderProps =
 export function LiteHeader(props: LiteHeaderProps) {
   return (
     <div
-      className="grid items-center gap-2 px-[18px] pb-3"
+      className="flex items-center justify-between gap-2 px-[18px] pb-3"
       style={{
-        gridTemplateColumns: '1fr auto 1fr',
         paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)',
       }}
     >
-      <div className="flex justify-start">
+      <div className="shrink-0">
         {props.mode === 'home' ? (
           <Avatar initials={props.user.initials} photoUrl={props.user.photoUrl} />
         ) : (
@@ -41,7 +40,7 @@ export function LiteHeader(props: LiteHeaderProps) {
         )}
       </div>
 
-      <div className="flex flex-col items-center text-subo-text">
+      <div className="flex min-w-0 flex-1 flex-col items-center text-subo-text">
         <SuboLogo size={100} />
         {props.mode === 'inner' && (
           <div className="mt-1 font-subo text-[13px] leading-none text-subo-textSoft">
@@ -50,7 +49,7 @@ export function LiteHeader(props: LiteHeaderProps) {
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-1.5">
+      <div className="flex shrink-0 items-center gap-1.5">
         {props.mode === 'home' ? (
           <BalanceChip amount={props.user.balance} onClick={props.onBalanceClick} />
         ) : (

@@ -138,6 +138,17 @@ export default function LiteConnect() {
     return canonicalUrl;
   }, [canonicalUrl]);
 
+  const openHapp = () => {
+    if (!happUrl) return;
+    const tg = window.Telegram?.WebApp;
+    if (tg && typeof tg.openLink === 'function') {
+      // Telegram WebApp — open in external browser so the WebView stays on /lite/connect.
+      tg.openLink(happUrl, { try_instant_view: false });
+      return;
+    }
+    window.location.href = happUrl;
+  };
+
   const handleCopy = async () => {
     if (!canonicalUrl) return;
     try {
@@ -182,13 +193,7 @@ export default function LiteConnect() {
       <div className="flex flex-col items-center gap-6">
         {happUrl && (
           <div className="flex w-full flex-col items-center gap-2">
-            <PrimaryButton
-              onClick={() => {
-                window.location.href = happUrl;
-              }}
-            >
-              Открыть в Happ
-            </PrimaryButton>
+            <PrimaryButton onClick={openHapp}>Открыть в Happ</PrimaryButton>
             <p className="text-center font-subo text-[13px] leading-[1.4] text-subo-textSoft">
               Если приложение установлено — подписка добавится автоматически
             </p>
