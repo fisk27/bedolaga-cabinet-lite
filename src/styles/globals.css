@@ -1811,3 +1811,31 @@ input[type='checkbox']:hover:not(:checked) {
     animation: none !important;
   }
 }
+
+/* ─── Variant B: hero-card glow underbleed ─── */
+.subo-hero-glow::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, -40%);
+  width: 360px;
+  height: 100px;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(255, 215, 0, 0.3), transparent 70%);
+  filter: blur(20px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ─── Variant B: amber wash behind the wordmark in LiteHeader ─── */
+.subo-wordmark-wash::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 140px;
+  background: radial-gradient(60% 60% at 50% 30%, rgba(255, 215, 0, 0.22), transparent 65%);
+  pointer-events: none;
+}

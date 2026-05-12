@@ -115,6 +115,13 @@ export default {
           amberDeep: '#C99A1F',
           amberInk: '#1A1605',
           green: '#7EC264',
+          // Variant B (Brand) tokens — coexist with amber.
+          canary: '#FFD700',
+          canaryHi: '#FFE352',
+          canaryLo: '#E6BE00',
+          canaryInk: '#1A1605',
+          surfaceGlass: 'rgba(28, 26, 20, 0.55)',
+          surfaceGlass2: 'rgba(28, 26, 20, 0.50)',
         },
       },
       fontFamily: {

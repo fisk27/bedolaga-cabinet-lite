@@ -14,13 +14,22 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
   const wordOnly = daysLeft === 0 ? 'Сегодня' : daysLeft === 1 ? 'Завтра' : null;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-subo-amber/[0.15] bg-subo-surface p-[22px]">
+    <div
+      className={[
+        'subo-hero-glow',
+        'relative overflow-hidden rounded-3xl p-[22px]',
+        'border border-subo-canary/[0.32]',
+        'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.18),transparent_55%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
+        'backdrop-blur-[18px]',
+        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_70px_-20px_rgba(255,215,0,0.28),0_0_0_1px_rgba(255,215,0,0.08)]',
+      ].join(' ')}
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 animate-subo-shimmer rounded-3xl"
         style={{
           background:
-            'radial-gradient(120% 80% at 100% 0%, rgba(242, 193, 46, 0.09), transparent 55%)',
+            'radial-gradient(120% 80% at 100% 0%, rgba(255, 215, 0, 0.18), transparent 55%)',
         }}
       />
       <div className="relative">
@@ -31,11 +40,11 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
         </div>
 
         <div className="mt-1 flex items-baseline gap-2.5">
-          <div className="font-subo text-[48px] font-semibold leading-none tracking-[-0.04em] text-subo-amber">
+          <div className="bg-gradient-to-b from-subo-canaryHi via-subo-canary to-subo-canaryLo bg-clip-text font-subo text-[48px] font-bold leading-none tracking-[-0.045em] text-transparent [font-feature-settings:'tnum'_1,'lnum'_1] [text-shadow:0_0_30px_rgba(255,215,0,0.45)]">
             {wordOnly ?? daysLeft}
           </div>
           {wordOnly === null && (
-            <div className="font-subo text-[20px] font-medium tracking-[-0.02em] text-subo-amber">
+            <div className="font-subo text-[20px] font-medium tracking-[-0.02em] text-subo-canary">
               {plural(daysLeft, ['день', 'дня', 'дней'])}
             </div>
           )}

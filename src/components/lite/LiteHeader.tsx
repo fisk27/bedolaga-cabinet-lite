@@ -40,7 +40,7 @@ export function LiteHeader(props: LiteHeaderProps) {
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col items-center text-subo-text">
+      <div className="subo-wordmark-wash relative flex min-w-0 flex-1 flex-col items-center text-subo-text">
         <SuboLogo size={100} />
         {props.mode === 'inner' && (
           <div className="mt-1 font-subo text-[13px] leading-none text-subo-textSoft">

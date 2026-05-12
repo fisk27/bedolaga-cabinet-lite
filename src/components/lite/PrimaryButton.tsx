@@ -22,11 +22,12 @@ export function PrimaryButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'relative inline-flex w-full cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-[14px] border-none bg-subo-amber px-5 font-subo text-[16px] font-semibold tracking-[-0.01em] text-subo-amberInk',
+        'relative inline-flex w-full cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-[14px] border-none px-5 font-subo text-[16px] font-semibold tracking-[-0.01em] text-subo-canaryInk',
+        'bg-gradient-to-b from-subo-canaryHi via-subo-canary to-subo-canaryLo',
         'min-h-[54px]',
         pulse
-          ? 'animate-subo-pulse shadow-[0_8px_28px_-10px_#F2C12E]'
-          : 'shadow-[0_6px_20px_-10px_#F2C12E]',
+          ? 'animate-subo-pulse shadow-[0_14px_36px_-8px_rgba(255,215,0,0.55),0_0_24px_-4px_rgba(255,215,0,0.40),inset_0_1px_0_0_rgba(255,255,255,0.40)]'
+          : 'shadow-[0_12px_30px_-10px_rgba(255,215,0,0.50),0_0_18px_-6px_rgba(255,215,0,0.30),inset_0_1px_0_0_rgba(255,255,255,0.35)]',
         'disabled:cursor-not-allowed disabled:opacity-50',
       )}
     >

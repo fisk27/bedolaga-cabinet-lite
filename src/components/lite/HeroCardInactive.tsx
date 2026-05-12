@@ -18,16 +18,25 @@ export function HeroCardInactive({
   trialPending = false,
 }: HeroCardInactiveProps) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-subo-hairline bg-subo-surface px-6 pb-7 pt-8">
+    <div
+      className={[
+        'subo-hero-glow',
+        'relative overflow-hidden rounded-3xl px-6 pb-7 pt-8',
+        'border border-subo-canary/[0.18]',
+        'bg-[linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
+        'backdrop-blur-[18px]',
+        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_20px_60px_-20px_rgba(255,215,0,0.20),0_0_0_1px_rgba(255,215,0,0.05)]',
+      ].join(' ')}
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute -right-[60px] -top-[60px] h-[180px] w-[180px] rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(242, 193, 46, 0.13), transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255, 215, 0, 0.22), transparent 70%)',
         }}
       />
 
-      <div className="mb-[22px] flex h-[52px] w-[52px] items-center justify-center rounded-[14px] bg-subo-amber/[0.08] text-subo-amber">
+      <div className="mb-[22px] flex h-[52px] w-[52px] items-center justify-center rounded-[14px] bg-subo-canary/[0.10] text-subo-canary shadow-[inset_0_0_0_1px_rgba(255,215,0,0.20),inset_0_0_18px_-6px_rgba(255,215,0,0.40)]">
         <ShieldIcon />
       </div>
 

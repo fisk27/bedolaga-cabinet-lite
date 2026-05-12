@@ -12,7 +12,27 @@ interface HeroCardActiveProps {
 
 export function HeroCardActive({ daysLeft, endDate, onConnect, onRenew }: HeroCardActiveProps) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-subo-hairline bg-subo-surface p-[22px]">
+    <div
+      className={[
+        'subo-hero-glow',
+        'relative overflow-hidden rounded-3xl p-[22px]',
+        'border border-subo-canary/[0.18]',
+        'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.14),transparent_55%),radial-gradient(120%_90%_at_0%_100%,rgba(255,215,0,0.06),transparent_60%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
+        'backdrop-blur-[18px]',
+        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_20px_60px_-20px_rgba(255,215,0,0.20),0_0_0_1px_rgba(255,215,0,0.05)]',
+      ].join(' ')}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)',
+          backgroundSize: '14px 14px',
+          WebkitMaskImage: 'radial-gradient(80% 60% at 50% 0%, #000, transparent 70%)',
+          maskImage: 'radial-gradient(80% 60% at 50% 0%, #000, transparent 70%)',
+        }}
+      />
       <div className="relative">
         <StatusPill kind="active">Подписка активна</StatusPill>
 
@@ -21,7 +41,7 @@ export function HeroCardActive({ daysLeft, endDate, onConnect, onRenew }: HeroCa
         </div>
 
         <div className="mt-1 flex items-baseline gap-2.5">
-          <div className="font-subo text-[48px] font-semibold leading-none tracking-[-0.04em] text-subo-text">
+          <div className="bg-gradient-to-b from-[#FFFCEF] via-[#FFF4B8] to-subo-canaryHi bg-clip-text font-subo text-[48px] font-bold leading-none tracking-[-0.045em] text-transparent [font-feature-settings:'tnum'_1,'lnum'_1] [text-shadow:0_0_30px_rgba(255,215,0,0.30)]">
             {daysLeft}
           </div>
           <div className="font-subo text-[20px] font-medium tracking-[-0.02em] text-subo-textSoft">

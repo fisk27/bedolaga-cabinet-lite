@@ -8,8 +8,8 @@ interface TariffCardProps {
 
 export function TariffCard({ name, period, onChange }: TariffCardProps) {
   return (
-    <div className="flex items-center gap-3.5 rounded-2xl border border-subo-hairline bg-subo-surface px-4 py-3.5">
-      <div className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[10px] bg-subo-surface2 text-subo-amber">
+    <div className="flex items-center gap-3.5 rounded-2xl border border-subo-hairline bg-subo-surface px-4 py-3.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)]">
+      <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-subo-canary/[0.22] bg-gradient-to-br from-[#2A2510] to-[#14110B] text-subo-canary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),inset_0_0_14px_-6px_rgba(255,215,0,0.28)]">
         <SparkIcon />
       </div>
       <div className="min-w-0 flex-1">
@@ -21,7 +21,7 @@ export function TariffCard({ name, period, onChange }: TariffCardProps) {
       <button
         type="button"
         onClick={onChange}
-        className="cursor-pointer border-none bg-transparent px-2 py-1.5 font-subo text-[13px] font-medium tracking-[-0.005em] text-subo-amber"
+        className="cursor-pointer border-none bg-transparent px-2 py-1.5 font-subo text-[13px] font-medium tracking-[-0.005em] text-subo-canary"
       >
         Сменить
       </button>
