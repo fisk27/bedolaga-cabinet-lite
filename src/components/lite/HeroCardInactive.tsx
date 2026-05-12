@@ -22,16 +22,17 @@ export function HeroCardInactive({
       className={[
         'relative overflow-hidden rounded-3xl px-6 pb-7 pt-8',
         'border border-subo-canary/[0.18]',
-        'bg-[linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
-        'backdrop-blur-[18px]',
         'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,215,0,0.05)]',
       ].join(' ')}
+      style={{
+        background: 'rgba(255,255,255,0.025)',
+      }}
     >
       <div
         aria-hidden
         className="pointer-events-none absolute -right-[60px] -top-[60px] h-[180px] w-[180px] rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(255, 215, 0, 0.22), transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255, 215, 0, 0.11), transparent 70%)',
         }}
       />
 

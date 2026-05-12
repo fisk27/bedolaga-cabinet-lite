@@ -18,10 +18,12 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
       className={[
         'relative overflow-hidden rounded-3xl p-[22px]',
         'border border-subo-canary/[0.32]',
-        'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.09),transparent_55%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
-        'backdrop-blur-[18px]',
         'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,215,0,0.08)]',
       ].join(' ')}
+      style={{
+        background:
+          'radial-gradient(140% 90% at 100% 0%, rgba(255,215,0,0.09), transparent 55%), rgba(255,255,255,0.025)',
+      }}
     >
       <div
         aria-hidden

@@ -16,10 +16,12 @@ export function HeroCardActive({ daysLeft, endDate, onConnect, onRenew }: HeroCa
       className={[
         'relative overflow-hidden rounded-3xl p-[22px]',
         'border border-subo-canary/[0.18]',
-        'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.07),transparent_55%),radial-gradient(120%_90%_at_0%_100%,rgba(255,215,0,0.03),transparent_60%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
-        'backdrop-blur-[18px]',
         'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,215,0,0.05)]',
       ].join(' ')}
+      style={{
+        background:
+          'radial-gradient(140% 90% at 100% 0%, rgba(255,215,0,0.07), transparent 55%), radial-gradient(120% 90% at 0% 100%, rgba(255,215,0,0.03), transparent 60%), rgba(255,255,255,0.025)',
+      }}
     >
       <div className="relative">
         <div className="flex justify-center">
