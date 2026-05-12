@@ -144,9 +144,18 @@ export default function LiteRenew() {
 
     if (!options || options.length === 0) {
       return (
-        <p className="py-10 text-center font-subo text-[14px] text-subo-textSoft">
-          Сейчас нет доступных вариантов продления
-        </p>
+        <div className="flex flex-col items-center px-6 py-12 text-center">
+          <h2 className="font-subo text-[18px] font-semibold tracking-[-0.01em] text-subo-text">
+            Нет вариантов продления
+          </h2>
+          <p className="mt-2 font-subo text-[14px] leading-[1.45] text-subo-textSoft">
+            Для этого тарифа продление недоступно. Выберите новый тариф, чтобы продолжить
+            пользоваться SUBO VPN.
+          </p>
+          <div className="mt-6 w-full">
+            <PrimaryButton onClick={() => navigate('/lite/tariffs')}>Выбрать тариф</PrimaryButton>
+          </div>
+        </div>
       );
     }
 

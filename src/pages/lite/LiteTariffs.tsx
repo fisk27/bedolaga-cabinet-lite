@@ -67,6 +67,7 @@ export default function LiteTariffs() {
   // can read them without violating the rules of hooks.
   const tariffsData: TariffsPurchaseOptions | null =
     data && data.sales_mode === 'tariffs' ? data : null;
+  const isTariffsMode = data?.sales_mode === 'tariffs';
   const visibleTariffs = tariffsData?.tariffs.filter((t) => !t.is_daily) ?? [];
   const selectedTariff = visibleTariffs.find((t) => t.id === selectedTariffId) ?? null;
   const selectedPeriod = selectedTariff?.periods.find((p) => p.days === selectedDays) ?? null;
@@ -79,7 +80,7 @@ export default function LiteTariffs() {
     queryKey: ['lite-purchase-preview', selectedTariffId, selectedDays, currentSubscriptionId],
     queryFn: () =>
       subscriptionApi.previewPurchase({ period_days: selectedDays! }, currentSubscriptionId),
-    enabled: !!selectedTariff && !!selectedDays,
+    enabled: !!selectedTariff && !!selectedDays && !isTariffsMode,
     retry: false,
     staleTime: 30_000,
   });
@@ -107,18 +108,32 @@ export default function LiteTariffs() {
     },
     void
   >({
-    // For a switch/extension on an active subscription we use submitPurchase
-    // (accepts subscription_id; backend prorates). For a fresh purchase we use
-    // purchaseTariff (no sub_id; carries tariff_id explicitly). See summary
-    // for the rationale.
-    mutationFn: () => {
-      if (currentSubscriptionId !== undefined) {
-        return subscriptionApi.submitPurchase(
-          { period_days: selectedDays! },
-          currentSubscriptionId,
-        );
+    mutationFn: async () => {
+      if (!selectedTariff || !selectedDays) {
+        throw new Error('No tariff selected');
       }
-      return subscriptionApi.purchaseTariff(selectedTariff!.id, selectedDays!);
+
+      if (isTariffsMode && currentSubscriptionId !== undefined) {
+        try {
+          return await subscriptionApi.switchTariff(selectedTariff.id, currentSubscriptionId);
+        } catch (err) {
+          const detail = (err as { response?: { data?: { detail?: string; code?: string } } })
+            ?.response?.data;
+          const useTariffPurchase =
+            detail?.code === 'use_purchase_flow' ||
+            detail?.detail?.toLowerCase?.().includes('expired');
+          if (useTariffPurchase) {
+            return await subscriptionApi.purchaseTariff(selectedTariff.id, selectedDays);
+          }
+          throw err;
+        }
+      }
+
+      if (isTariffsMode) {
+        return subscriptionApi.purchaseTariff(selectedTariff.id, selectedDays);
+      }
+
+      return subscriptionApi.submitPurchase({ period_days: selectedDays }, currentSubscriptionId);
     },
     onSuccess: (result) => {
       if (result.success) {
@@ -186,9 +201,9 @@ export default function LiteTariffs() {
   };
 
   const renderPreview = (): ReactNode => {
-    // Errored: silently fall back to the period's own labels so the page
-    // still communicates a price.
-    if (previewError && selectedPeriod) {
+    // Errored or skipped (tariffs mode has no live preview): fall back to the
+    // period's own labels so the page still communicates a price.
+    if (selectedPeriod && (previewError || (isTariffsMode && !preview))) {
       return (
         <div className="text-center">
           <div className="font-subo text-[28px] font-semibold tracking-[-0.02em] text-subo-amber">

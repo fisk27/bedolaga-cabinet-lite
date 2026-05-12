@@ -15,9 +15,9 @@ export function TrafficCard({ usedGb, totalGb }: TrafficCardProps) {
   const pct = isUnlimited ? 0 : Math.min(100, Math.max(0, (usedGb / totalGb) * 100));
 
   return (
-    <div className="rounded-2xl border border-subo-hairline bg-subo-surface px-4 py-3.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)]">
+    <div className="subo-corner-glow-bottom relative rounded-2xl border border-subo-canary/[0.10] bg-subo-surface/60 px-4 py-3.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-[12px]">
       <div className="flex items-center gap-3.5">
-        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-subo-canary/[0.22] bg-gradient-to-br from-[#2A2510] to-[#14110B] text-subo-canary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),inset_0_0_14px_-6px_rgba(255,215,0,0.28)]">
+        <div className="flex h-10 w-10 flex-none items-center justify-center text-subo-canary [&>svg]:h-6 [&>svg]:w-6">
           <TrafficChartIcon />
         </div>
         <div className="min-w-0 flex-1">

@@ -33,7 +33,9 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
         }}
       />
       <div className="relative">
-        <StatusPill kind="warn">Скоро истекает</StatusPill>
+        <div className="flex justify-center">
+          <StatusPill kind="warn">Скоро истекает</StatusPill>
+        </div>
 
         <div className="mt-[18px] font-subo text-[14px] tracking-[-0.005em] text-subo-textSoft">
           Истекает

@@ -22,19 +22,10 @@ export function HeroCardActive({ daysLeft, endDate, onConnect, onRenew }: HeroCa
         'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_20px_60px_-20px_rgba(255,215,0,0.20),0_0_0_1px_rgba(255,215,0,0.05)]',
       ].join(' ')}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)',
-          backgroundSize: '14px 14px',
-          WebkitMaskImage: 'radial-gradient(80% 60% at 50% 0%, #000, transparent 70%)',
-          maskImage: 'radial-gradient(80% 60% at 50% 0%, #000, transparent 70%)',
-        }}
-      />
       <div className="relative">
-        <StatusPill kind="active">Подписка активна</StatusPill>
+        <div className="flex justify-center">
+          <StatusPill kind="active">Подписка активна</StatusPill>
+        </div>
 
         <div className="mt-[18px] font-subo text-[14px] tracking-[-0.005em] text-subo-textSoft">
           Осталось

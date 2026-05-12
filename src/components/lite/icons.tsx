@@ -99,6 +99,21 @@ export function AlertIcon({ className, ...rest }: IconProps) {
   );
 }
 
+export function CrownIcon({ className, ...rest }: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} {...rest}>
+      <path
+        d="M3 8l4.5 4L12 5l4.5 7L21 8l-1.5 11h-15L3 8z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M5 19h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function TrafficChartIcon({ className, ...rest }: IconProps) {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className={className} {...rest}>
