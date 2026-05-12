@@ -35,7 +35,8 @@ import { useAnalyticsCounters } from './hooks/useAnalyticsCounters';
 // Auth pages - load immediately (small)
 import Login from './pages/Login';
 import TelegramCallback from './pages/TelegramCallback';
-import TelegramRedirect from './pages/TelegramRedirect';
+import TelegramAuthRedirect from './pages/TelegramRedirect';
+import { TelegramRedirect } from './components/TelegramRedirect';
 import DeepLinkRedirect from './pages/DeepLinkRedirect';
 import VerifyEmail from './pages/VerifyEmail';
 import ResetPassword from './pages/ResetPassword';
@@ -250,8 +251,8 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/auth/telegram/callback" element={<TelegramCallback />} />
-        <Route path="/auth/telegram" element={<TelegramRedirect />} />
-        <Route path="/tg" element={<TelegramRedirect />} />
+        <Route path="/auth/telegram" element={<TelegramAuthRedirect />} />
+        <Route path="/tg" element={<TelegramAuthRedirect />} />
         <Route path="/connect" element={<DeepLinkRedirect />} />
         <Route path="/add" element={<DeepLinkRedirect />} />
         <Route path="/auth/oauth/callback" element={<OAuthCallback />} />
@@ -400,9 +401,11 @@ function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <LazyPage>
-                <Dashboard />
-              </LazyPage>
+              <TelegramRedirect>
+                <LazyPage>
+                  <Dashboard />
+                </LazyPage>
+              </TelegramRedirect>
             </ProtectedRoute>
           }
         />
@@ -442,7 +445,9 @@ function App() {
           path="/subscription"
           element={
             <ProtectedRoute>
-              <Navigate to="/subscriptions" replace />
+              <TelegramRedirect>
+                <Navigate to="/subscriptions" replace />
+              </TelegramRedirect>
             </ProtectedRoute>
           }
         />
@@ -450,9 +455,11 @@ function App() {
           path="/subscription/purchase"
           element={
             <ProtectedRoute>
-              <LazyPage>
-                <SubscriptionPurchase />
-              </LazyPage>
+              <TelegramRedirect>
+                <LazyPage>
+                  <SubscriptionPurchase />
+                </LazyPage>
+              </TelegramRedirect>
             </ProtectedRoute>
           }
         />
@@ -460,9 +467,11 @@ function App() {
           path="/balance"
           element={
             <ProtectedRoute>
-              <LazyPage>
-                <Balance />
-              </LazyPage>
+              <TelegramRedirect>
+                <LazyPage>
+                  <Balance />
+                </LazyPage>
+              </TelegramRedirect>
             </ProtectedRoute>
           }
         />

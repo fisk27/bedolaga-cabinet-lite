@@ -22,7 +22,7 @@ function FaqAccordion({ items }: { items: FaqItem[] }) {
         const isOpen = openIndex === i;
         return (
           <div
-            key={i}
+            key={`${i}-${item.q.slice(0, 30)}`}
             className="overflow-hidden rounded-2xl border border-subo-hairline bg-subo-surface"
           >
             <button

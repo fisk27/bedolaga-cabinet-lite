@@ -32,6 +32,7 @@ export default function LiteTariffs() {
   const { data, isLoading } = useQuery({
     queryKey: ['purchase-options'],
     queryFn: () => subscriptionApi.getPurchaseOptions(),
+    staleTime: 30_000,
   });
 
   // Identify the user's current subscription so previews and purchases for an
@@ -39,7 +40,7 @@ export default function LiteTariffs() {
   const { data: subscriptionsList } = useQuery({
     queryKey: ['subscriptions-list'],
     queryFn: () => subscriptionApi.getSubscriptions(),
-    staleTime: 60_000,
+    staleTime: API.BALANCE_STALE_TIME_MS,
   });
 
   const { data: subscriptionResponse } = useQuery({
@@ -51,8 +52,7 @@ export default function LiteTariffs() {
   });
 
   const activeSubscription = subscriptionResponse?.subscription ?? null;
-  // TODO(multi-tariff): mirror LiteHome — for now treat the first list item as
-  // the primary subscription for the switch context.
+  // Multi-tariff: treat the first subscription as the switch context until post-launch per-sub UI lands.
   const multiFirst =
     (subscriptionsList?.multi_tariff_enabled ?? false)
       ? (subscriptionsList?.subscriptions?.[0] ?? null)
@@ -67,7 +67,8 @@ export default function LiteTariffs() {
   // can read them without violating the rules of hooks.
   const tariffsData: TariffsPurchaseOptions | null =
     data && data.sales_mode === 'tariffs' ? data : null;
-  const selectedTariff = tariffsData?.tariffs.find((t) => t.id === selectedTariffId) ?? null;
+  const visibleTariffs = tariffsData?.tariffs.filter((t) => !t.is_daily) ?? [];
+  const selectedTariff = visibleTariffs.find((t) => t.id === selectedTariffId) ?? null;
   const selectedPeriod = selectedTariff?.periods.find((p) => p.days === selectedDays) ?? null;
 
   const {
@@ -124,6 +125,8 @@ export default function LiteTariffs() {
         queryClient.invalidateQueries({ queryKey: ['subscription'] });
         queryClient.invalidateQueries({ queryKey: ['subscriptions-list'] });
         queryClient.invalidateQueries({ queryKey: ['balance'] });
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        queryClient.invalidateQueries({ queryKey: ['devices', currentSubscriptionId ?? null] });
         navigate('/lite');
       } else {
         setError(result.message || 'Не удалось оформить подписку');
@@ -156,7 +159,7 @@ export default function LiteTariffs() {
 
   const handleSelectTariff = (id: number) => {
     setSelectedTariffId(id);
-    const t = tariffsData?.tariffs.find((x) => x.id === id);
+    const t = visibleTariffs.find((x) => x.id === id);
     setSelectedDays(t?.periods[0]?.days ?? null);
   };
 
@@ -273,13 +276,25 @@ export default function LiteTariffs() {
         {data.all_tariffs_purchased ? 'Все тарифы уже куплены' : 'Сейчас нет доступных тарифов'}
       </div>
     );
+  } else if (visibleTariffs.length === 0) {
+    body = (
+      <div className="flex flex-col gap-4 py-6">
+        <p className="text-center font-subo text-[14px] leading-[1.45] text-subo-textSoft">
+          Сейчас нет доступных тарифов для оформления. Откройте полный кабинет для расширенных
+          вариантов покупки.
+        </p>
+        <PrimaryButton onClick={() => navigate('/subscription/purchase')}>
+          Открыть кабинет
+        </PrimaryButton>
+      </div>
+    );
   } else {
     body = (
       <>
         <p className="text-center font-subo text-[13px] text-subo-textSoft">Выберите тариф</p>
 
         <div className="flex flex-col gap-2">
-          {data.tariffs.map((t) => (
+          {visibleTariffs.map((t) => (
             <TariffOption
               key={t.id}
               tariff={t}

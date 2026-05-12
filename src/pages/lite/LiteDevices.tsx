@@ -4,6 +4,7 @@ import { LiteLayout } from '@/components/lite/LiteLayout';
 import { DeviceIcon } from '@/components/lite/icons';
 import { cn } from '@/lib/utils';
 import { subscriptionApi } from '@/api/subscription';
+import { API } from '@/config/constants';
 
 function TrashIcon() {
   return (
@@ -31,7 +32,7 @@ export default function LiteDevices() {
   const { data: multiSubData } = useQuery({
     queryKey: ['subscriptions-list'],
     queryFn: () => subscriptionApi.getSubscriptions(),
-    staleTime: 60_000,
+    staleTime: API.BALANCE_STALE_TIME_MS,
   });
   const isMultiTariff = multiSubData?.multi_tariff_enabled ?? false;
 
@@ -40,7 +41,7 @@ export default function LiteDevices() {
     queryFn: () => subscriptionApi.getSubscription(),
     enabled: !isMultiTariff,
     retry: false,
-    staleTime: 60_000,
+    staleTime: API.BALANCE_STALE_TIME_MS,
   });
 
   const fullSub = subResponse?.subscription ?? null;
@@ -56,9 +57,9 @@ export default function LiteDevices() {
 
   const deleteMutation = useMutation({
     mutationFn: (hwid: string) => subscriptionApi.deleteDevice(hwid, subscriptionId ?? undefined),
-    onSuccess: () => {
+    onSuccess: (_data, hwid) => {
       queryClient.invalidateQueries({ queryKey: ['devices', subscriptionId] });
-      setConfirmingHwid(null);
+      setConfirmingHwid((current) => (current === hwid ? null : current));
       setDeleteError(null);
     },
     onError: (err: unknown) => {

@@ -6,6 +6,7 @@ import { PrimaryButton } from '@/components/lite/PrimaryButton';
 import { RenewOption } from '@/components/lite/RenewOption';
 import { subscriptionApi } from '@/api/subscription';
 import { balanceApi } from '@/api/balance';
+import { API } from '@/config/constants';
 
 export default function LiteRenew() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function LiteRenew() {
   const { data: multiSubData } = useQuery({
     queryKey: ['subscriptions-list'],
     queryFn: () => subscriptionApi.getSubscriptions(),
-    staleTime: 60_000,
+    staleTime: API.BALANCE_STALE_TIME_MS,
   });
 
   const isMultiTariff = multiSubData?.multi_tariff_enabled ?? false;
@@ -26,7 +27,7 @@ export default function LiteRenew() {
     queryFn: () => subscriptionApi.getSubscription(),
     enabled: !isMultiTariff,
     retry: false,
-    staleTime: 60_000,
+    staleTime: API.BALANCE_STALE_TIME_MS,
   });
 
   const fullSub = subResponse?.subscription ?? null;
@@ -47,7 +48,7 @@ export default function LiteRenew() {
     staleTime: 60_000,
   });
 
-  const balanceKopeks = balanceData ? balanceData.balance_rubles * 100 : 0;
+  const balanceKopeks = balanceData?.balance_kopeks ?? 0;
 
   const navigateToTopUp = (missingKopeks: number) => {
     const missingRubles = Math.ceil(missingKopeks / 100);
@@ -76,6 +77,7 @@ export default function LiteRenew() {
       queryClient.invalidateQueries({ queryKey: ['subscriptions-list'] });
       queryClient.invalidateQueries({ queryKey: ['renewal-options', subscriptionId] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       navigate('/lite', { replace: true });
     },
     onError: (err) => {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
 import { subscriptionApi } from '@/api/subscription';
+import { API } from '@/config/constants';
 import { resolveConnectionUrlForUi } from '@/utils/connectionLink';
 import { LiteLayout } from '@/components/lite/LiteLayout';
 import { PrimaryButton } from '@/components/lite/PrimaryButton';
@@ -64,23 +65,40 @@ function DownloadGrid({ platforms }: { platforms: Record<string, PlatformInfo> }
 export default function LiteConnect() {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+
+  const { data: multiSubData, isLoading: multiSubLoading } = useQuery({
+    queryKey: ['subscriptions-list'],
+    queryFn: () => subscriptionApi.getSubscriptions(),
+    staleTime: API.BALANCE_STALE_TIME_MS,
+  });
+
+  const isMultiTariff = multiSubData?.multi_tariff_enabled ?? false;
+
+  const { data: subscriptionResponse, isLoading: subLoading } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: () => subscriptionApi.getSubscription(),
+    enabled: !isMultiTariff,
+    retry: false,
+    staleTime: API.BALANCE_STALE_TIME_MS,
+  });
+
+  const fullSub = subscriptionResponse?.subscription ?? null;
+  const multiFirst = multiSubData?.subscriptions?.[0] ?? null;
+  const subscriptionId = fullSub?.id ?? multiFirst?.id ?? null;
 
   const { data: connectionLink, isLoading: linkLoading } = useQuery({
-    queryKey: ['connection-link'],
-    queryFn: () => subscriptionApi.getConnectionLink(),
+    queryKey: ['connection-link', subscriptionId],
+    queryFn: () => subscriptionApi.getConnectionLink(subscriptionId ?? undefined),
+    enabled: !!subscriptionId,
     retry: false,
     staleTime: 30_000,
   });
 
   const { data: appConfig } = useQuery({
-    queryKey: ['app-config'],
-    queryFn: () => subscriptionApi.getAppConfig(),
-    staleTime: 60_000,
-  });
-
-  const { data: subscriptionResponse } = useQuery({
-    queryKey: ['subscription'],
-    queryFn: () => subscriptionApi.getSubscription(),
+    queryKey: ['app-config', subscriptionId],
+    queryFn: () => subscriptionApi.getAppConfig(subscriptionId ?? undefined),
+    enabled: !!subscriptionId,
     staleTime: 60_000,
   });
 
@@ -90,7 +108,8 @@ export default function LiteConnect() {
     staleTime: 5 * 60_000,
   });
 
-  const subscription = subscriptionResponse?.subscription ?? null;
+  const isResolvingSub = multiSubLoading || (!isMultiTariff && subLoading);
+  const hasSubscription = !!fullSub || !!multiFirst;
 
   // resolveConnectionUrlForUi takes a single camelCase options object — map
   // the snake_case API fields the same way Connection.tsx does.
@@ -126,7 +145,8 @@ export default function LiteConnect() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // ignore — fallback not needed for now
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 2000);
     }
   };
 
@@ -135,14 +155,14 @@ export default function LiteConnect() {
     Object.values(downloads.platforms ?? {}).some((p) => p?.link);
 
   let body: ReactNode;
-  if (linkLoading) {
+  if (isResolvingSub || (hasSubscription && linkLoading)) {
     body = (
       <div className="flex flex-col items-center gap-4 py-6">
         <div className="h-[280px] w-[280px] animate-pulse rounded-2xl border border-subo-hairline bg-subo-surface" />
         <div className="h-[54px] w-full max-w-[280px] animate-pulse rounded-[14px] border border-subo-hairline bg-subo-surface" />
       </div>
     );
-  } else if (!subscription) {
+  } else if (!hasSubscription) {
     body = (
       <div className="flex flex-col items-center gap-4 rounded-3xl border border-subo-hairline bg-subo-surface px-6 py-10 text-center">
         <p className="font-subo text-[15px] leading-[1.45] text-subo-textSoft">
@@ -183,7 +203,7 @@ export default function LiteConnect() {
             Или отсканируйте QR в Happ
           </p>
           <GhostButton onClick={handleCopy}>
-            {copied ? 'Скопировано ✓' : 'Скопировать ссылку'}
+            {copyError ? 'Ошибка' : copied ? 'Скопировано ✓' : 'Скопировать ссылку'}
           </GhostButton>
         </div>
 

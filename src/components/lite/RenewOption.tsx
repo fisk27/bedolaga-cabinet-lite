@@ -58,7 +58,7 @@ export function RenewOption({
       </div>
 
       {!canAfford && (
-        <div className="mt-2 font-subo text-[12px] text-red-400">
+        <div className="mt-2 font-subo text-[12px] text-error-400">
           Не хватает {Math.ceil(missingKopeks / 100).toLocaleString('ru-RU')} ₽ на балансе
         </div>
       )}

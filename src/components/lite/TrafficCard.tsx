@@ -11,7 +11,8 @@ function formatGb(g: number) {
 }
 
 export function TrafficCard({ usedGb, totalGb }: TrafficCardProps) {
-  const pct = totalGb > 0 ? Math.min(100, Math.max(0, (usedGb / totalGb) * 100)) : 0;
+  const isUnlimited = totalGb === 0;
+  const pct = isUnlimited ? 0 : Math.min(100, Math.max(0, (usedGb / totalGb) * 100));
 
   return (
     <div className="rounded-2xl border border-subo-hairline bg-subo-surface px-4 py-3.5">
@@ -23,13 +24,21 @@ export function TrafficCard({ usedGb, totalGb }: TrafficCardProps) {
           <div className="mb-1.5 flex items-baseline justify-between">
             <div className="font-subo text-[14px] text-subo-textSoft">Расход трафика</div>
             <div className="font-subo text-[13px] font-medium text-subo-text">
-              {formatGb(usedGb)}{' '}
-              <span className="font-normal text-subo-textMute">/ {formatGb(totalGb)}</span>
+              {isUnlimited ? (
+                'Безлимит'
+              ) : (
+                <>
+                  {formatGb(usedGb)}{' '}
+                  <span className="font-normal text-subo-textMute">/ {formatGb(totalGb)}</span>
+                </>
+              )}
             </div>
           </div>
-          <div className="h-1 w-full overflow-hidden rounded-full bg-subo-text/[0.06]">
-            <div className="h-full rounded-full bg-subo-amber" style={{ width: `${pct}%` }} />
-          </div>
+          {!isUnlimited && (
+            <div className="h-1 w-full overflow-hidden rounded-full bg-subo-text/[0.06]">
+              <div className="h-full rounded-full bg-subo-amber" style={{ width: `${pct}%` }} />
+            </div>
+          )}
         </div>
       </div>
     </div>

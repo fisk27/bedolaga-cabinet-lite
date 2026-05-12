@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionApi } from '@/api/subscription';
@@ -74,7 +75,7 @@ export default function LiteHome() {
   const { data: multiSubData, isLoading: multiSubLoading } = useQuery({
     queryKey: ['subscriptions-list'],
     queryFn: () => subscriptionApi.getSubscriptions(),
-    staleTime: 60_000,
+    staleTime: API.BALANCE_STALE_TIME_MS,
   });
   const isMultiTariff = multiSubData?.multi_tariff_enabled ?? false;
 
@@ -87,9 +88,9 @@ export default function LiteHome() {
   });
 
   const fullSub = subscriptionResponse?.subscription ?? null;
-  // TODO(multi-tariff): proper per-subscription handling. For now we surface
-  // the first list item and synthesize a single primary sub.
+  // Multi-tariff: surface only the first subscription until post-launch per-sub UI lands.
   const multiFirst = isMultiTariff ? (multiSubData?.subscriptions?.[0] ?? null) : null;
+  const subscriptionId = fullSub?.id ?? multiFirst?.id ?? null;
 
   let subscription: LiteSub | null = null;
   if (fullSub) {
@@ -117,9 +118,9 @@ export default function LiteHome() {
   }
 
   const { data: devicesData } = useQuery({
-    queryKey: ['devices'],
-    queryFn: () => subscriptionApi.getDevices(),
-    enabled: !!fullSub && !isMultiTariff,
+    queryKey: ['devices', subscriptionId],
+    queryFn: () => subscriptionApi.getDevices(subscriptionId ?? undefined),
+    enabled: !!subscriptionId,
     staleTime: API.BALANCE_STALE_TIME_MS,
   });
 
@@ -129,17 +130,24 @@ export default function LiteHome() {
     enabled: !subscription && !subLoading && !multiSubLoading,
   });
 
-  const activateTrial = useMutation({
+  const [trialError, setTrialError] = useState<string | null>(null);
+
+  const activateTrial = useMutation<unknown, { response?: { data?: { detail?: string } } }, void>({
     mutationFn: () => subscriptionApi.activateTrial(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
       queryClient.invalidateQueries({ queryKey: ['subscriptions-list'] });
       queryClient.invalidateQueries({ queryKey: ['trial-info'] });
       queryClient.invalidateQueries({ queryKey: ['balance'] });
+      setTrialError(null);
     },
-    onError: (error) => {
-      // TODO(error UI): surface to the user via toast or inline message.
-      console.error('[trial] activation failed', error);
+    onError: (err) => {
+      const detail = err.response?.data?.detail;
+      setTrialError(
+        typeof detail === 'string'
+          ? detail
+          : 'Не удалось активировать пробный период. Попробуйте ещё раз.',
+      );
     },
   });
 
@@ -154,6 +162,25 @@ export default function LiteHome() {
         : subscription.daysLeft <= 3
           ? 'expiring'
           : 'active';
+
+  const { data: purchaseOptions } = useQuery({
+    queryKey: ['purchase-options'],
+    queryFn: () => subscriptionApi.getPurchaseOptions(),
+    enabled: liteState === 'inactive',
+    staleTime: 60_000,
+  });
+
+  const minMonthlyKopeks = useMemo(() => {
+    if (!purchaseOptions || purchaseOptions.sales_mode !== 'tariffs') return null;
+    const prices = purchaseOptions.tariffs
+      .filter((t) => !t.is_daily)
+      .flatMap((t) => t.periods.map((p) => p.price_per_month_kopeks))
+      .filter((v) => v > 0);
+    if (prices.length === 0) return null;
+    return Math.min(...prices);
+  }, [purchaseOptions]);
+
+  const minMonthlyRubles = minMonthlyKopeks ? Math.round(minMonthlyKopeks / 100) : null;
 
   const onSelectTariff = () => navigate('/lite/tariffs');
   const onTrial = () => activateTrial.mutate();
@@ -180,7 +207,13 @@ export default function LiteHome() {
             onTrial={onTrial}
             trialAvailable={trialInfo?.is_available ?? false}
             trialPending={activateTrial.isPending}
+            fromPrice={minMonthlyRubles ?? undefined}
           />
+          {trialError && (
+            <div className="mt-3 rounded-xl border border-error-500/30 bg-error-500/10 px-4 py-3 text-sm text-error-400">
+              {trialError}
+            </div>
+          )}
         </div>
       )}
 

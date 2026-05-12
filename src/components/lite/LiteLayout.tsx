@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth';
 import { balanceApi } from '@/api/balance';
@@ -16,6 +16,7 @@ type LiteLayoutProps = {
 
 export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLayoutProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const { data: balanceData } = useQuery({
     queryKey: ['balance'],
@@ -23,11 +24,24 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
     staleTime: API.BALANCE_STALE_TIME_MS,
   });
 
+  const titleSuffix = variant === 'home' ? null : variant.title;
+
   useEffect(() => {
     const baseTitle = 'SUBO VPN';
-    const pageTitle = variant === 'home' ? baseTitle : `${variant.title} · ${baseTitle}`;
-    document.title = pageTitle;
-  }, [variant]);
+    document.title = titleSuffix === null ? baseTitle : `${titleSuffix} · ${baseTitle}`;
+  }, [titleSuffix]);
+
+  // Track our own Lite navigation depth. window.history.length is polluted by
+  // the Telegram bot's preceding entries, so back can fall out of the WebView.
+  // sessionStorage clears on tab close, so each fresh WebView session starts at 0.
+  useEffect(() => {
+    const current = parseInt(sessionStorage.getItem('lite-nav-depth') ?? '0', 10);
+    sessionStorage.setItem('lite-nav-depth', String(current + 1));
+    return () => {
+      const c = parseInt(sessionStorage.getItem('lite-nav-depth') ?? '1', 10);
+      sessionStorage.setItem('lite-nav-depth', String(Math.max(0, c - 1)));
+    };
+  }, []);
 
   const initials =
     (
@@ -35,9 +49,14 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
     ).toUpperCase() || '?';
   const balance = balanceData?.balance_rubles ?? 0;
 
-  const handleBalanceClick = () => navigate('/lite/balance');
+  const handleBalanceClick = () => {
+    if (location.pathname !== '/lite/balance') {
+      navigate('/lite/balance');
+    }
+  };
   const handleBack = () => {
-    if (window.history.length <= 1) {
+    const depth = parseInt(sessionStorage.getItem('lite-nav-depth') ?? '0', 10);
+    if (depth <= 1) {
       navigate(backFallback, { replace: true });
     } else {
       navigate(-1);

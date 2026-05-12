@@ -5,8 +5,13 @@ import { LiteLayout } from '@/components/lite/LiteLayout';
 import { ArrowIcon } from '@/components/lite/icons';
 import { infoPagesApi } from '@/api/infoPages';
 
-function resolveTitle(title: Record<string, string>, locale: string, slug: string): string {
-  return title[locale] || title.ru || Object.values(title)[0] || slug;
+function resolveTitle(
+  title: Record<string, string> | null | undefined,
+  locale: string,
+  slug: string,
+): string {
+  const map = title ?? {};
+  return map[locale] || map.ru || Object.values(map)[0] || slug;
 }
 
 export default function LiteInfo() {
@@ -43,7 +48,7 @@ export default function LiteInfo() {
             <button
               key={page.id}
               type="button"
-              onClick={() => navigate(`/lite/info/${page.slug}`)}
+              onClick={() => navigate(`/lite/info/${encodeURIComponent(page.slug)}`)}
               className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-2xl border border-subo-hairline bg-subo-surface p-4 text-left transition-colors hover:bg-subo-text/[0.02]"
             >
               <span className="font-subo text-[15px] font-medium text-subo-text">

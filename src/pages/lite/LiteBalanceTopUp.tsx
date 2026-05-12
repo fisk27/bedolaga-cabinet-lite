@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { LiteLayout } from '@/components/lite/LiteLayout';
 import { PrimaryButton } from '@/components/lite/PrimaryButton';
@@ -19,6 +19,7 @@ function getPreferredOptionId(options: PaymentMethodOption[] | null | undefined)
 
 export default function LiteBalanceTopUp() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const initialAmount = parseFloat(searchParams.get('amount') || '0');
   const returnTo = searchParams.get('returnTo');
@@ -31,6 +32,7 @@ export default function LiteBalanceTopUp() {
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
   const { data: methods, isLoading: methodsLoading } = useQuery({
     queryKey: ['payment-methods'],
@@ -74,7 +76,9 @@ export default function LiteBalanceTopUp() {
     onSuccess: (result) => {
       if (result.payment_url) {
         setPaymentUrl(result.payment_url);
-        window.open(result.payment_url, '_blank', 'noopener');
+        // Don't auto-open — popup blockers (iOS Safari, Telegram WebView) silently block
+        // popups from async callbacks. User clicks "Открыть оплату" button in the success
+        // card, which is a direct user gesture and always works.
       }
     },
     onError: (err) => {
@@ -88,8 +92,10 @@ export default function LiteBalanceTopUp() {
   }, [amountRubles, selectedMethodId, selectedOptionId]);
 
   const handleSuccess = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['balance'] });
+    queryClient.invalidateQueries({ queryKey: ['transactions'] });
     navigate(returnTo || '/lite/balance', { replace: true });
-  }, [navigate, returnTo]);
+  }, [navigate, queryClient, returnTo]);
 
   useCloseOnSuccessNotification(handleSuccess);
 
@@ -100,7 +106,8 @@ export default function LiteBalanceTopUp() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // ignore
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 2000);
     }
   };
 
@@ -251,16 +258,21 @@ export default function LiteBalanceTopUp() {
           <div className="flex flex-col gap-3 rounded-3xl border border-subo-amber/30 bg-subo-amber/[0.04] p-5 text-center">
             <div className="font-subo text-[18px] font-semibold text-subo-text">Платёж создан</div>
 
-            <PrimaryButton onClick={() => window.open(paymentUrl, '_blank', 'noopener')}>
+            <PrimaryButton
+              onClick={() => {
+                window.location.href = paymentUrl;
+              }}
+            >
               Открыть оплату
             </PrimaryButton>
 
             <GhostButton onClick={handleCopy}>
-              {copied ? 'Скопировано ✓' : 'Скопировать ссылку'}
+              {copyError ? 'Ошибка' : copied ? 'Скопировано ✓' : 'Скопировать ссылку'}
             </GhostButton>
 
             <p className="font-subo text-[13px] leading-[1.45] text-subo-textSoft">
-              После оплаты вы автоматически вернётесь сюда
+              Нажмите «Открыть оплату», чтобы перейти к оплате. После оплаты вы автоматически
+              вернётесь сюда.
             </p>
           </div>
         )}

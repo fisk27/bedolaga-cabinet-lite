@@ -2,19 +2,6 @@ import type { SVGProps } from 'react';
 
 type IconProps = { className?: string } & Omit<SVGProps<SVGSVGElement>, 'className'>;
 
-export function BurgerIcon({ className, ...rest }: IconProps) {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className={className} {...rest}>
-      <path
-        d="M4 7h16M4 12h16M4 17h16"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 export function ShieldIcon({ className, ...rest }: IconProps) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} {...rest}>

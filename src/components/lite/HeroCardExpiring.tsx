@@ -11,7 +11,7 @@ interface HeroCardExpiringProps {
 }
 
 export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: HeroCardExpiringProps) {
-  const showTomorrow = daysLeft <= 1;
+  const wordOnly = daysLeft === 0 ? 'Сегодня' : daysLeft === 1 ? 'Завтра' : null;
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-subo-amber/[0.15] bg-subo-surface p-[22px]">
@@ -32,9 +32,9 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
 
         <div className="mt-1 flex items-baseline gap-2.5">
           <div className="font-subo text-[48px] font-semibold leading-none tracking-[-0.04em] text-subo-amber">
-            {showTomorrow ? 'Завтра' : daysLeft}
+            {wordOnly ?? daysLeft}
           </div>
-          {!showTomorrow && (
+          {wordOnly === null && (
             <div className="font-subo text-[20px] font-medium tracking-[-0.02em] text-subo-amber">
               {plural(daysLeft, ['день', 'дня', 'дней'])}
             </div>
