@@ -99,6 +99,56 @@ export function AlertIcon({ className, ...rest }: IconProps) {
   );
 }
 
+export function FileIcon({ className, ...rest }: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} {...rest}>
+      <path
+        d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M14 3v5h5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path
+        d="M8.5 13h7M8.5 16.5h7M8.5 9.5h2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function QuestionIcon({ className, ...rest }: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} {...rest}>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 1-1 1.7v.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="17" r="0.9" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function StarIcon({ className, ...rest }: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} {...rest}>
+      <path
+        d="M12 2L14.6 8.6L21.6 9.3L16.3 14L18.1 21L12 17.3L5.9 21L7.7 14L2.4 9.3L9.4 8.6L12 2Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function CrownIcon({ className, ...rest }: IconProps) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} {...rest}>

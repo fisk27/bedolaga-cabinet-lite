@@ -20,7 +20,6 @@ export function HeroCardInactive({
   return (
     <div
       className={[
-        'subo-hero-glow',
         'relative overflow-hidden rounded-3xl px-6 pb-7 pt-8',
         'border border-subo-canary/[0.18]',
         'bg-[linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',

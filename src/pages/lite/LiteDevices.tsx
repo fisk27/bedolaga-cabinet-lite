@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { subscriptionApi } from '@/api/subscription';
 import { API } from '@/config/constants';
 
-function TrashIcon() {
+function TrashIcon({ className }: { className?: string }) {
   return (
     <svg
       width="16"
@@ -18,6 +18,7 @@ function TrashIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={className}
     >
       <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6" />
     </svg>
@@ -116,8 +117,8 @@ export default function LiteDevices() {
     }
     return (
       <>
-        <div className="font-subo text-[13px] text-subo-textSoft">
-          {limit === 0 ? `${total} устройств` : `${total} из ${limit}`}
+        <div className="px-1 pb-3 font-subo text-[11px] font-semibold uppercase tracking-[0.12em] text-subo-textSoft">
+          АКТИВНЫЕ · {total} ИЗ {limit === 0 ? '∞' : limit}
         </div>
         <div className="flex flex-col gap-2">
           {devices.map((device) => {
@@ -127,50 +128,57 @@ export default function LiteDevices() {
               <div key={device.hwid}>
                 <div
                   className={cn(
-                    'flex items-center gap-3 rounded-2xl border bg-subo-surface p-4',
-                    isConfirming ? 'border-error-500/40' : 'border-subo-hairline',
+                    'flex items-center gap-3 rounded-2xl border bg-subo-surface/60 px-4 py-3.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-[12px]',
+                    isConfirming ? 'border-error-500/40' : 'border-subo-canary/[0.10]',
                   )}
                 >
-                  <div className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[10px] bg-subo-surface2 text-subo-text">
-                    <DeviceIcon />
+                  <div className="flex h-11 w-11 flex-none items-center justify-center rounded-xl border border-subo-canary/[0.20] bg-subo-canary/[0.08] text-subo-canary">
+                    <DeviceIcon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-subo text-[16px] font-semibold text-subo-text">
-                      {device.device_model || 'Устройство'}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="truncate font-mono text-[14px] font-semibold text-subo-text">
+                        {device.device_model || 'Устройство'}
+                      </div>
+                      {isConfirming ? (
+                        <div className="flex flex-none gap-1.5">
+                          <button
+                            type="button"
+                            onClick={onCancel}
+                            disabled={isMutating}
+                            className="cursor-pointer rounded-lg border border-subo-hairline bg-transparent px-2.5 py-1 font-subo text-[12px] text-subo-textSoft disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Отмена
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onConfirmDelete(device.hwid)}
+                            disabled={isMutating}
+                            className="cursor-pointer rounded-lg border border-error-500/40 bg-error-500/20 px-2.5 py-1 font-subo text-[12px] font-semibold text-error-400 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {isMutating ? 'Удаляем…' : 'Удалить'}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => onTrashClick(device.hwid)}
+                          aria-label="Удалить устройство"
+                          className="flex h-8 w-8 flex-none cursor-pointer items-center justify-center rounded-lg border border-subo-hairline bg-transparent p-0 text-subo-textSoft transition-colors hover:bg-subo-hairline"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
-                    <div className="mt-0.5 truncate font-subo text-[13px] text-subo-textSoft">
-                      {device.platform} · {device.hwid.slice(0, 8).toUpperCase()}
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className="inline-flex items-center rounded-full border border-subo-canary/[0.20] bg-subo-canary/[0.10] px-2 py-0.5 font-subo text-[11px] font-semibold text-subo-canaryHi">
+                        {device.platform}
+                      </span>
+                      <span className="font-mono text-[12px] uppercase tracking-[0.05em] text-subo-textMute">
+                        {device.hwid.slice(0, 8).toUpperCase()}
+                      </span>
                     </div>
                   </div>
-                  {!isConfirming ? (
-                    <button
-                      type="button"
-                      onClick={() => onTrashClick(device.hwid)}
-                      aria-label="Удалить устройство"
-                      className="flex h-[38px] w-[38px] flex-none cursor-pointer items-center justify-center rounded-[10px] border border-subo-hairline bg-transparent p-0 text-subo-textSoft transition-colors hover:bg-subo-hairline"
-                    >
-                      <TrashIcon />
-                    </button>
-                  ) : (
-                    <div className="flex flex-none items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onConfirmDelete(device.hwid)}
-                        disabled={isMutating}
-                        className="cursor-pointer rounded-[10px] border-none bg-error-500/90 px-3 py-2 font-subo text-[13px] font-semibold text-white transition-colors hover:bg-error-500 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {isMutating ? 'Удаляем…' : 'Удалить'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={onCancel}
-                        disabled={isMutating}
-                        className="cursor-pointer rounded-[10px] border border-subo-hairline bg-transparent px-3 py-2 font-subo text-[13px] font-medium text-subo-textSoft transition-colors hover:bg-subo-hairline disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        Отмена
-                      </button>
-                    </div>
-                  )}
                 </div>
                 {isConfirming && deleteError && (
                   <div className="mt-2 rounded-xl border border-error-500/30 bg-error-500/10 px-3 py-2 font-subo text-[12px] text-error-400">

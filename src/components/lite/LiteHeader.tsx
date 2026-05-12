@@ -25,7 +25,7 @@ export function LiteHeader(props: LiteHeaderProps) {
       }}
     >
       <div className="relative flex min-h-[100px] items-center justify-between gap-2 px-[18px] pb-3">
-        <div className="subo-wordmark-wash pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-subo-text">
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-subo-text">
           <SuboLogo size={100} />
         </div>
 

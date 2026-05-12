@@ -16,7 +16,6 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
   return (
     <div
       className={[
-        'subo-hero-glow',
         'relative overflow-hidden rounded-3xl p-[22px]',
         'border border-subo-canary/[0.32]',
         'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.18),transparent_55%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
@@ -42,7 +41,7 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
         </div>
 
         <div className="mt-1 flex items-baseline gap-2.5">
-          <div className="bg-gradient-to-b from-subo-canaryHi via-subo-canary to-subo-canaryLo bg-clip-text font-subo text-[48px] font-bold leading-none tracking-[-0.045em] text-transparent [font-feature-settings:'tnum'_1,'lnum'_1] [text-shadow:0_0_30px_rgba(255,215,0,0.45)]">
+          <div className="font-subo text-[48px] font-bold leading-none tracking-[-0.045em] text-subo-canary [font-feature-settings:'tnum'_1,'lnum'_1]">
             {wordOnly ?? daysLeft}
           </div>
           {wordOnly === null && (
