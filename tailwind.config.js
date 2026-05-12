@@ -104,7 +104,7 @@ export default {
         // SUBO VPN design system (warm dark + amber). Namespaced to coexist
         // with the existing CSS-variable-driven dark/champagne/accent palette.
         subo: {
-          bg: '#0F0E0A',
+          bg: '#000000',
           surface: '#1C1A14',
           surface2: '#23201A',
           hairline: 'rgba(250, 250, 249, 0.07)',

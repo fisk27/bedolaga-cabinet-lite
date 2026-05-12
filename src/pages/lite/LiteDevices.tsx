@@ -117,8 +117,12 @@ export default function LiteDevices() {
     }
     return (
       <>
-        <div className="px-1 pb-3 font-subo text-[11px] font-semibold uppercase tracking-[0.12em] text-subo-textSoft">
-          АКТИВНЫЕ · {total} ИЗ {limit === 0 ? '∞' : limit}
+        <div className="flex items-center gap-3 px-1 pb-3">
+          <span className="h-px flex-1 bg-subo-hairline" />
+          <span className="whitespace-nowrap font-subo text-[11px] font-semibold uppercase tracking-[0.12em] text-subo-textSoft">
+            АКТИВНЫЕ · {total} ИЗ {limit === 0 ? '∞' : limit}
+          </span>
+          <span className="h-px flex-1 bg-subo-hairline" />
         </div>
         <div className="flex flex-col gap-2">
           {devices.map((device) => {
@@ -128,9 +132,13 @@ export default function LiteDevices() {
               <div key={device.hwid}>
                 <div
                   className={cn(
-                    'flex items-center gap-3 rounded-2xl border bg-subo-surface/60 px-4 py-3.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-[12px]',
-                    isConfirming ? 'border-error-500/40' : 'border-subo-canary/[0.10]',
+                    'relative flex items-center gap-3 overflow-hidden rounded-2xl border px-4 py-3.5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),inset_0_-1px_0_0_rgba(0,0,0,0.20)] backdrop-blur-[8px]',
+                    isConfirming ? 'border-error-500/40' : 'border-subo-canary/[0.08]',
                   )}
+                  style={{
+                    background:
+                      'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.10), transparent 65%), rgba(255,255,255,0.025)',
+                  }}
                 >
                   <div className="flex h-11 w-11 flex-none items-center justify-center text-subo-canary">
                     <DeviceIcon className="h-6 w-6" />

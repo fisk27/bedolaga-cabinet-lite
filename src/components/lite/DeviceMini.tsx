@@ -22,9 +22,9 @@ export function DeviceMini({ used, total }: DeviceMiniProps) {
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex items-baseline justify-between">
           <div className="font-subo text-[14px] text-subo-textSoft">Устройства</div>
-          <div className="font-subo text-[13px] font-medium text-subo-text">
+          <span className="rounded-full border border-subo-canary/[0.30] px-2.5 py-1 font-subo text-[12px] font-semibold text-subo-canary">
             {used} из {total}
-          </div>
+          </span>
         </div>
         <div className="h-1 w-full overflow-hidden rounded-full bg-subo-text/[0.05] shadow-[inset_0_1px_0_0_rgba(0,0,0,0.4)]">
           <div className="h-full rounded-full bg-sky-400" style={{ width: `${pct}%` }} />

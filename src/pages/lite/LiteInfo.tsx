@@ -57,7 +57,11 @@ export default function LiteInfo() {
               key={page.id}
               type="button"
               onClick={() => navigate(`/lite/info/${encodeURIComponent(page.slug)}`)}
-              className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-subo-canary/[0.10] bg-subo-surface/60 px-3.5 py-3.5 text-left shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-[12px] transition-colors hover:bg-subo-text/[0.02]"
+              className="relative flex w-full cursor-pointer items-center gap-3 overflow-hidden rounded-2xl border border-subo-canary/[0.08] px-3.5 py-3.5 text-left shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),inset_0_-1px_0_0_rgba(0,0,0,0.20)] backdrop-blur-[8px] transition-colors"
+              style={{
+                background:
+                  'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.10), transparent 65%), rgba(255,255,255,0.025)',
+              }}
             >
               <div className="flex h-10 w-10 flex-none items-center justify-center text-subo-canary [&>svg]:h-6 [&>svg]:w-6">
                 {getIconForPage(page.slug, page.page_type)}

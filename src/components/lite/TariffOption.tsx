@@ -43,12 +43,15 @@ export function TariffOption({ tariff, selected, onSelect, isCurrent = false }: 
       onClick={onSelect}
       disabled={disabled}
       className={cn(
-        'relative w-full rounded-2xl border bg-subo-surface px-[18px] py-4 text-left transition-colors',
-        selected ? 'border-subo-amber bg-subo-amber/[0.04]' : 'border-subo-hairline',
-        disabled
-          ? 'cursor-not-allowed opacity-50'
-          : !selected && 'cursor-pointer hover:bg-subo-text/[0.02]',
+        'relative w-full overflow-hidden rounded-2xl border px-[18px] py-4 text-left shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),inset_0_-1px_0_0_rgba(0,0,0,0.20)] backdrop-blur-[8px] transition-colors',
+        selected ? 'border-subo-canary/[0.35]' : 'border-subo-canary/[0.08]',
+        disabled ? 'cursor-not-allowed opacity-50' : !selected && 'cursor-pointer',
       )}
+      style={{
+        background: selected
+          ? 'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.18), transparent 65%), rgba(255,255,255,0.025)'
+          : 'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.10), transparent 65%), rgba(255,255,255,0.025)',
+      }}
     >
       {cornerLabel && (
         <div className="absolute right-3 top-3 font-subo text-[11px] font-medium uppercase tracking-[0.06em] text-subo-amber">

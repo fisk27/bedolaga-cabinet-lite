@@ -47,12 +47,24 @@ export default function LiteBalance() {
     <LiteLayout variant={{ title: 'Баланс' }}>
       <div className="flex flex-col gap-5 pb-6 pt-3">
         {balanceLoading ? (
-          <div className="rounded-3xl border border-subo-hairline bg-subo-surface p-7 text-center">
+          <div
+            className="relative overflow-hidden rounded-3xl border border-subo-canary/[0.08] p-7 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),inset_0_-1px_0_0_rgba(0,0,0,0.20)] backdrop-blur-[8px]"
+            style={{
+              background:
+                'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.10), transparent 65%), rgba(255,255,255,0.025)',
+            }}
+          >
             <div className="mx-auto h-12 w-40 animate-pulse rounded-lg bg-subo-hairline" />
             <div className="mx-auto mt-2 h-3 w-32 animate-pulse rounded-lg bg-subo-hairline" />
           </div>
         ) : (
-          <div className="rounded-3xl border border-subo-hairline bg-subo-surface p-7 text-center">
+          <div
+            className="relative overflow-hidden rounded-3xl border border-subo-canary/[0.08] p-7 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),inset_0_-1px_0_0_rgba(0,0,0,0.20)] backdrop-blur-[8px]"
+            style={{
+              background:
+                'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.10), transparent 65%), rgba(255,255,255,0.025)',
+            }}
+          >
             <div className="font-subo text-[48px] font-bold leading-none text-subo-amber">
               {balanceRubles.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ₽
             </div>

@@ -306,7 +306,13 @@ export default function LiteTariffs() {
   } else {
     body = (
       <>
-        <p className="text-center font-subo text-[13px] text-subo-textSoft">Выберите тариф</p>
+        <div className="flex items-center gap-3 px-1 pb-3">
+          <span className="h-px flex-1 bg-subo-hairline" />
+          <span className="whitespace-nowrap font-subo text-[11px] font-semibold uppercase tracking-[0.12em] text-subo-textSoft">
+            Выберите тариф
+          </span>
+          <span className="h-px flex-1 bg-subo-hairline" />
+        </div>
 
         <div className="flex flex-col gap-2">
           {visibleTariffs.map((t) => (

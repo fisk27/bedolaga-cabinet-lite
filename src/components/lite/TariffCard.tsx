@@ -27,7 +27,7 @@ export function TariffCard({ name, period: _period, onChange }: TariffCardProps)
       <button
         type="button"
         onClick={onChange}
-        className="cursor-pointer border-none bg-transparent px-2 py-1.5 font-subo text-[13px] font-medium tracking-[-0.005em] text-subo-canary"
+        className="cursor-pointer rounded-full border border-subo-canary/[0.30] bg-transparent px-2.5 py-1 font-subo text-[12px] font-semibold text-subo-canary"
       >
         Сменить
       </button>
