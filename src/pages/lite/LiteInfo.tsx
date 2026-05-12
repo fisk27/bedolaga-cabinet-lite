@@ -59,14 +59,14 @@ export default function LiteInfo() {
               onClick={() => navigate(`/lite/info/${encodeURIComponent(page.slug)}`)}
               className="flex w-full cursor-pointer items-center gap-3 rounded-2xl border border-subo-canary/[0.10] bg-subo-surface/60 px-3.5 py-3.5 text-left shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)] backdrop-blur-[12px] transition-colors hover:bg-subo-text/[0.02]"
             >
-              <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-subo-canary/[0.20] bg-subo-canary/[0.08] text-subo-canary">
+              <div className="flex h-10 w-10 flex-none items-center justify-center text-subo-canary [&>svg]:h-6 [&>svg]:w-6">
                 {getIconForPage(page.slug, page.page_type)}
               </div>
               <span className="flex-1 font-subo text-[15px] font-semibold text-subo-text">
                 {resolveTitle(page.title, locale, page.slug)}
               </span>
-              <div className="flex h-9 w-9 flex-none items-center justify-center rounded-full border border-subo-canary/[0.20] text-subo-canary">
-                <ArrowIcon className="h-4 w-4" />
+              <div className="flex h-9 w-9 flex-none items-center justify-center text-subo-canary [&>svg]:h-5 [&>svg]:w-5">
+                <ArrowIcon />
               </div>
             </button>
           ))

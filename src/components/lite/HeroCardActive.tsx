@@ -18,7 +18,7 @@ export function HeroCardActive({ daysLeft, endDate, onConnect, onRenew }: HeroCa
         'border border-subo-canary/[0.18]',
         'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.14),transparent_55%),radial-gradient(120%_90%_at_0%_100%,rgba(255,215,0,0.06),transparent_60%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
         'backdrop-blur-[18px]',
-        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_20px_60px_-20px_rgba(255,215,0,0.20),0_0_0_1px_rgba(255,215,0,0.05)]',
+        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,215,0,0.05)]',
       ].join(' ')}
     >
       <div className="relative">

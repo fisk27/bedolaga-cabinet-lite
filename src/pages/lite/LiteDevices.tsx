@@ -132,8 +132,8 @@ export default function LiteDevices() {
                     isConfirming ? 'border-error-500/40' : 'border-subo-canary/[0.10]',
                   )}
                 >
-                  <div className="flex h-11 w-11 flex-none items-center justify-center rounded-xl border border-subo-canary/[0.20] bg-subo-canary/[0.08] text-subo-canary">
-                    <DeviceIcon className="h-5 w-5" />
+                  <div className="flex h-11 w-11 flex-none items-center justify-center text-subo-canary">
+                    <DeviceIcon className="h-6 w-6" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">

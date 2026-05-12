@@ -20,7 +20,7 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
         'border border-subo-canary/[0.32]',
         'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.18),transparent_55%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
         'backdrop-blur-[18px]',
-        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_24px_70px_-20px_rgba(255,215,0,0.28),0_0_0_1px_rgba(255,215,0,0.08)]',
+        'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,215,0,0.08)]',
       ].join(' ')}
     >
       <div
