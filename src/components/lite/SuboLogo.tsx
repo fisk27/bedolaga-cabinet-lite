@@ -3,8 +3,8 @@ interface SuboLogoProps {
   color?: string;
 }
 
-// Intrinsic dimensions of public/subo-logo.png (773 × 323).
-const LOGO_ASPECT = 773 / 323;
+// Intrinsic dimensions of public/subo-logo.png (377 × 188).
+const LOGO_ASPECT = 377 / 188;
 
 export function SuboLogo({ size = 28 }: SuboLogoProps) {
   const width = Math.round(size * LOGO_ASPECT);

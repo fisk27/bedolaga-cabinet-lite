@@ -48,6 +48,11 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
       (user?.first_name?.[0] ?? '') + (user?.last_name?.[0] ?? user?.username?.[0] ?? '')
     ).toUpperCase() || '?';
   const balance = balanceData?.balance_rubles ?? 0;
+  // User type has no photo_url; the only source is the Telegram WebApp init data.
+  const photoUrl =
+    (typeof window !== 'undefined'
+      ? window.Telegram?.WebApp?.initDataUnsafe?.user?.photo_url
+      : null) ?? null;
 
   const handleBalanceClick = () => {
     if (location.pathname !== '/lite/balance') {
@@ -69,7 +74,7 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
         {variant === 'home' ? (
           <LiteHeader
             mode="home"
-            user={{ initials, balance }}
+            user={{ initials, balance, photoUrl }}
             onBalanceClick={handleBalanceClick}
           />
         ) : (

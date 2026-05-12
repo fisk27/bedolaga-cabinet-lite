@@ -6,7 +6,7 @@ import { ArrowIcon } from './icons';
 type LiteHeaderProps =
   | {
       mode: 'home';
-      user: { initials: string; balance: number };
+      user: { initials: string; balance: number; photoUrl?: string | null };
       onBalanceClick: () => void;
     }
   | {
@@ -28,7 +28,7 @@ export function LiteHeader(props: LiteHeaderProps) {
     >
       <div className="flex justify-start">
         {props.mode === 'home' ? (
-          <Avatar initials={props.user.initials} />
+          <Avatar initials={props.user.initials} photoUrl={props.user.photoUrl} />
         ) : (
           <button
             type="button"
@@ -42,7 +42,7 @@ export function LiteHeader(props: LiteHeaderProps) {
       </div>
 
       <div className="flex flex-col items-center text-subo-text">
-        <SuboLogo size={18} />
+        <SuboLogo size={100} />
         {props.mode === 'inner' && (
           <div className="mt-1 font-subo text-[13px] leading-none text-subo-textSoft">
             {props.title}

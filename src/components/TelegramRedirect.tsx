@@ -8,6 +8,7 @@ const REDIRECTS: Record<string, string> = {
   '/subscription/purchase': '/lite/tariffs',
   '/tariffs': '/lite/tariffs',
   '/balance': '/lite/balance',
+  '/info': '/lite/info',
 };
 
 export function TelegramRedirect({ children }: { children: ReactNode }) {

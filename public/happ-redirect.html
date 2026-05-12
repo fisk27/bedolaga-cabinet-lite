@@ -4,92 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:;">
-<title>Подключение к Happ — SUBO VPN</title>
+<title>SUBO VPN</title>
 <style>
-  * { box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #0F0E0A;
-    color: #FAFAF9;
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    padding-top: max(24px, env(safe-area-inset-top));
-    padding-bottom: max(24px, env(safe-area-inset-bottom));
-  }
-  .card {
-    background: #1C1A14;
-    border: 1px solid rgba(250,250,249,0.07);
-    border-radius: 24px;
-    padding: 32px 24px;
-    text-align: center;
-    max-width: 360px;
-    width: 100%;
-  }
-  .icon {
-    width: 56px;
-    height: 56px;
-    margin: 0 auto 16px;
-    border-radius: 16px;
-    background: rgba(242,193,46,0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-  }
-  h1 {
-    color: #FAFAF9;
-    font-size: 18px;
-    margin: 0 0 8px;
-    font-weight: 600;
-  }
-  p {
-    color: #A8A29E;
-    line-height: 1.45;
-    margin: 0 0 24px;
-    font-size: 14px;
-  }
-  a.btn {
-    display: inline-block;
-    background: #F2C12E;
-    color: #1A1605;
-    padding: 14px 24px;
-    border-radius: 14px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 15px;
-    transition: opacity 0.15s;
-  }
-  a.btn:active { opacity: 0.85; }
-  .hidden { display: none; }
+  body { background: #0F0E0A; color: #FAFAF9; margin: 0; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  #fallback { display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; }
+  .card { background: #1C1A14; border: 1px solid rgba(250,250,249,0.07); border-radius: 24px; padding: 32px 24px; text-align: center; max-width: 360px; width: 100%; }
+  h1 { font-size: 18px; margin: 0 0 8px; font-weight: 600; }
+  p { color: #A8A29E; line-height: 1.45; margin: 0 0 24px; font-size: 14px; }
+  a.btn { display: inline-block; background: #F2C12E; color: #1A1605; padding: 14px 24px; border-radius: 14px; text-decoration: none; font-weight: 600; font-size: 15px; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="icon">⚡</div>
-  <h1 id="title">Открываем Happ…</h1>
-  <p id="hint">Если приложение не открылось автоматически, нажмите кнопку ниже.</p>
-  <a id="link" class="btn" href="#">Открыть в Happ</a>
+<div id="fallback">
+  <div class="card">
+    <h1>Не удалось открыть Happ</h1>
+    <p id="hint">Нажмите кнопку, чтобы попробовать ещё раз. Если приложение не установлено — установите его.</p>
+    <a id="link" class="btn" href="#">Открыть в Happ</a>
+  </div>
 </div>
 <script>
-  (function() {
-    var params = new URLSearchParams(window.location.search);
-    var to = params.get('to');
-    if (!to || !to.startsWith('happ://')) {
-      document.getElementById('title').textContent = 'Ссылка не передана';
-      document.getElementById('hint').textContent = 'Откройте подключение через личный кабинет SUBO VPN.';
-      document.getElementById('link').classList.add('hidden');
-      return;
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var to = params.get('to');
+  if (!to || !to.startsWith('happ://')) {
+    document.getElementById('hint').textContent = 'Ссылка для подключения не передана. Откройте /lite/connect ещё раз.';
+    document.getElementById('link').style.display = 'none';
+    document.getElementById('fallback').style.display = 'flex';
+    return;
+  }
+  document.getElementById('link').href = to;
+  // Instant redirect
+  window.location.replace(to);
+  // If we're still here after 1.5s, show fallback UI (Happ probably not installed)
+  setTimeout(function() {
+    if (document.visibilityState === 'visible') {
+      document.getElementById('fallback').style.display = 'flex';
     }
-    document.getElementById('link').href = to;
-    // Try auto-redirect after a short delay (gives the page a chance to render)
-    setTimeout(function() {
-      window.location.href = to;
-    }, 200);
-  })();
+  }, 1500);
+})();
 </script>
 </body>
 </html>

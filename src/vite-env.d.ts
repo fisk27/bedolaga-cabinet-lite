@@ -17,6 +17,15 @@ interface ImportMeta {
 interface TelegramWebAppGlobal {
   onEvent?: (event: string, callback: () => void) => void;
   offEvent?: (event: string, callback: () => void) => void;
+  initDataUnsafe?: {
+    user?: {
+      id?: number;
+      first_name?: string;
+      last_name?: string;
+      username?: string;
+      photo_url?: string;
+    };
+  };
 }
 
 /** Telegram Login JS SDK — loaded from https://oauth.telegram.org/js/telegram-login.js */
