@@ -137,7 +137,7 @@ export default function LiteDevices() {
                   )}
                   style={{
                     background:
-                      'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.10), transparent 65%), rgba(255,255,255,0.025)',
+                      'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.30), transparent 65%), rgba(255,255,255,0.025)',
                   }}
                 >
                   <div className="flex h-11 w-11 flex-none items-center justify-center text-subo-canary">

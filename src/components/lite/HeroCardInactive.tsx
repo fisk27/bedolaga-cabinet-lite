@@ -32,7 +32,7 @@ export function HeroCardInactive({
         aria-hidden
         className="pointer-events-none absolute -right-[60px] -top-[60px] h-[180px] w-[180px] rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(255, 215, 0, 0.11), transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255, 215, 0, 0.33), transparent 70%)',
         }}
       />
 

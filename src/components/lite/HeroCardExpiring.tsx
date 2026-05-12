@@ -22,7 +22,7 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
       ].join(' ')}
       style={{
         background:
-          'radial-gradient(140% 90% at 100% 0%, rgba(255,215,0,0.09), transparent 55%), rgba(255,255,255,0.025)',
+          'radial-gradient(140% 90% at 100% 0%, rgba(255,215,0,0.27), transparent 55%), rgba(255,255,255,0.025)',
       }}
     >
       <div
@@ -30,7 +30,7 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
         className="pointer-events-none absolute inset-0 animate-subo-shimmer rounded-3xl"
         style={{
           background:
-            'radial-gradient(120% 80% at 100% 0%, rgba(255, 215, 0, 0.18), transparent 55%)',
+            'radial-gradient(120% 80% at 100% 0%, rgba(255, 215, 0, 0.54), transparent 55%)',
         }}
       />
       <div className="relative">

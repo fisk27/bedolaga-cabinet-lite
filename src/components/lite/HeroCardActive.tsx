@@ -20,7 +20,7 @@ export function HeroCardActive({ daysLeft, endDate, onConnect, onRenew }: HeroCa
       ].join(' ')}
       style={{
         background:
-          'radial-gradient(140% 90% at 100% 0%, rgba(255,215,0,0.07), transparent 55%), radial-gradient(120% 90% at 0% 100%, rgba(255,215,0,0.03), transparent 60%), rgba(255,255,255,0.025)',
+          'radial-gradient(140% 90% at 100% 0%, rgba(255,215,0,0.21), transparent 55%), radial-gradient(120% 90% at 0% 100%, rgba(255,215,0,0.09), transparent 60%), rgba(255,255,255,0.025)',
       }}
     >
       <div className="relative">

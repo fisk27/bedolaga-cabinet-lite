@@ -49,8 +49,8 @@ export function TariffOption({ tariff, selected, onSelect, isCurrent = false }: 
       )}
       style={{
         background: selected
-          ? 'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.18), transparent 65%), rgba(255,255,255,0.025)'
-          : 'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.10), transparent 65%), rgba(255,255,255,0.025)',
+          ? 'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.54), transparent 65%), rgba(255,255,255,0.025)'
+          : 'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.30), transparent 65%), rgba(255,255,255,0.025)',
       }}
     >
       {cornerLabel && (
