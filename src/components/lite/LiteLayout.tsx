@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useCallback, useEffect, type ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth';
@@ -62,14 +62,37 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
       navigate('/lite/balance');
     }
   };
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     const depth = parseInt(sessionStorage.getItem('lite-nav-depth') ?? '0', 10);
     if (depth <= 1) {
       navigate(backFallback, { replace: true });
     } else {
       navigate(-1);
     }
-  };
+  }, [backFallback, navigate]);
+
+  // Telegram WebApp BackButton: home → close mini app; inner pages → in-Lite back.
+  useEffect(() => {
+    const tg = window.Telegram?.WebApp;
+    if (!tg?.BackButton) return;
+
+    const isHome = location.pathname === '/lite';
+    tg.BackButton.show();
+
+    const handler = () => {
+      if (isHome) {
+        tg.close();
+      } else {
+        handleBack();
+      }
+    };
+
+    tg.BackButton.onClick(handler);
+
+    return () => {
+      tg.BackButton?.offClick(handler);
+    };
+  }, [location.pathname, handleBack]);
 
   return (
     <div className="min-h-screen bg-subo-bg font-subo text-subo-text">

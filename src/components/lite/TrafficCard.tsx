@@ -23,12 +23,14 @@ export function TrafficCard({ usedGb, totalGb }: TrafficCardProps) {
       }}
     >
       <div className="flex items-center gap-3.5">
-        <div className="flex h-10 w-10 flex-none items-center justify-center text-subo-canary [&>svg]:h-6 [&>svg]:w-6">
+        <div className="flex h-10 w-10 flex-none items-center justify-center text-subo-canaryHi [&>svg]:h-6 [&>svg]:w-6">
           <TrafficChartIcon />
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-1.5 flex items-baseline justify-between">
-            <div className="font-subo text-[14px] text-subo-textSoft">Расход трафика</div>
+            <div className="font-subo text-[14px] font-medium tracking-[-0.005em] text-white">
+              Расход трафика
+            </div>
             <div className="font-subo text-[13px] font-medium text-subo-text">
               {formatGb(usedGb)}{' '}
               <span className="font-normal text-subo-textMute">

@@ -16,13 +16,15 @@ export function DeviceMini({ used, total }: DeviceMiniProps) {
           'radial-gradient(120% 80% at 50% 120%, rgba(255,215,0,0.10), transparent 65%), rgba(255,255,255,0.025)',
       }}
     >
-      <div className="flex h-10 w-10 flex-none items-center justify-center text-subo-canary [&>svg]:h-6 [&>svg]:w-6">
+      <div className="flex h-10 w-10 flex-none items-center justify-center text-subo-canaryHi [&>svg]:h-6 [&>svg]:w-6">
         <DeviceIcon />
       </div>
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex items-baseline justify-between">
-          <div className="font-subo text-[14px] text-subo-textSoft">Устройства</div>
-          <span className="rounded-full border border-subo-canary/[0.30] px-2.5 py-1 font-subo text-[12px] font-semibold text-subo-canary">
+          <div className="font-subo text-[14px] font-medium tracking-[-0.005em] text-white">
+            Устройства
+          </div>
+          <span className="rounded-full bg-gradient-to-b from-subo-canaryHi via-subo-canary to-subo-canaryLo px-2.5 py-1 font-subo text-[12px] font-semibold text-subo-canaryInk shadow-[0_4px_12px_-4px_rgba(255,215,0,0.40),inset_0_1px_0_0_rgba(255,255,255,0.30)]">
             {used} из {total}
           </span>
         </div>

@@ -18,7 +18,7 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
       className={[
         'relative overflow-hidden rounded-3xl p-[22px]',
         'border border-subo-canary/[0.32]',
-        'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.18),transparent_55%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
+        'bg-[radial-gradient(140%_90%_at_100%_0%,rgba(255,215,0,0.09),transparent_55%),linear-gradient(180deg,rgba(28,26,20,0.65)_0%,rgba(20,18,12,0.55)_100%)]',
         'backdrop-blur-[18px]',
         'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_0_0_1px_rgba(255,215,0,0.08)]',
       ].join(' ')}
@@ -36,22 +36,19 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
           <StatusPill kind="warn">Скоро истекает</StatusPill>
         </div>
 
-        <div className="mt-[18px] font-subo text-[14px] tracking-[-0.005em] text-subo-textSoft">
-          Истекает
-        </div>
-
-        <div className="mt-1 flex items-baseline gap-2.5">
-          <div className="font-subo text-[48px] font-bold leading-none tracking-[-0.045em] text-subo-canary [font-feature-settings:'tnum'_1,'lnum'_1]">
-            {wordOnly ?? daysLeft}
-          </div>
-          {wordOnly === null && (
-            <div className="font-subo text-[20px] font-medium tracking-[-0.02em] text-subo-canary">
-              {plural(daysLeft, ['день', 'дня', 'дней'])}
+        <div className="mt-[18px] text-center">
+          <div className="flex items-baseline justify-center gap-2.5">
+            <div className="font-subo text-[48px] font-bold leading-none tracking-[-0.045em] text-white [font-feature-settings:'tnum'_1,'lnum'_1]">
+              {wordOnly ?? daysLeft}
             </div>
-          )}
+            {wordOnly === null && (
+              <div className="font-subo text-[20px] font-medium tracking-[-0.02em] text-white">
+                {plural(daysLeft, ['день', 'дня', 'дней'])}
+              </div>
+            )}
+          </div>
+          <div className="mt-1.5 font-subo text-[13px] text-subo-textMute">до {endDate}</div>
         </div>
-
-        <div className="mt-1.5 font-subo text-[13px] text-subo-textMute">до {endDate}</div>
 
         <div className="mt-[22px]">
           <PrimaryButton pulse onClick={onRenew}>
