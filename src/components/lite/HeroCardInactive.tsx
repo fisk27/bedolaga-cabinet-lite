@@ -45,7 +45,7 @@ export function HeroCardInactive({
       </h2>
 
       <p className="mb-7 font-subo text-[15px] leading-[1.45] text-subo-textSoft">
-        Свободный интернет на любом устройстве — без рекламы и логов.
+        Быстрое и приватное подключение на любом устройстве.
       </p>
 
       <PrimaryButton onClick={onSelectTariff} icon={<ArrowIcon />}>
