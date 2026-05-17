@@ -32,10 +32,14 @@ function deviceLabel(count: number): string {
   return `до ${count} ${plural(count, ['устройства', 'устройств', 'устройств'])}`;
 }
 
+const HTML_TAG_RE = /<\/?[a-z][^>]*>/i;
+
 export function TariffOption({ tariff, selected, onSelect, isCurrent = false }: TariffOptionProps) {
   const purchased = tariff.is_purchased === true;
   const disabled = purchased || !tariff.is_available;
   const cornerLabel = purchased ? 'Уже куплен' : isCurrent ? 'Текущий' : null;
+  const description = tariff.description?.trim() || null;
+  const descriptionIsHtml = !!description && HTML_TAG_RE.test(description);
 
   return (
     <button
@@ -74,6 +78,16 @@ export function TariffOption({ tariff, selected, onSelect, isCurrent = false }: 
           </div>
         </div>
       </div>
+
+      {description &&
+        (descriptionIsHtml ? (
+          <div
+            className="mt-2 line-clamp-3 text-sm text-white/50"
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
+        ) : (
+          <div className="mt-2 line-clamp-3 text-sm text-white/50">{description}</div>
+        ))}
 
       <div className="mt-2 font-subo text-[12px] text-subo-textMute">
         {deviceLabel(tariff.device_limit)}

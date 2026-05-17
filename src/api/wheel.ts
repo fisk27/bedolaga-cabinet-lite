@@ -19,6 +19,7 @@ export interface WheelConfig {
   name: string;
   spin_cost_stars: number | null;
   spin_cost_days: number | null;
+  spin_cost_tickets: number | null;
   spin_cost_stars_enabled: boolean;
   spin_cost_days_enabled: boolean;
   prizes: WheelPrize[];
@@ -32,6 +33,7 @@ export interface WheelConfig {
   required_balance_kopeks: number;
   has_subscription: boolean;
   eligible_subscriptions: EligibleSubscription[] | null;
+  spin_tickets_balance: number;
 }
 
 export interface SpinAvailability {
@@ -195,7 +197,7 @@ export const wheelApi = {
   },
 
   spin: async (
-    paymentType: 'telegram_stars' | 'subscription_days',
+    paymentType: 'telegram_stars' | 'subscription_days' | 'tickets',
     subscriptionId?: number,
   ): Promise<SpinResult> => {
     const response = await apiClient.post<SpinResult>('/cabinet/wheel/spin', {

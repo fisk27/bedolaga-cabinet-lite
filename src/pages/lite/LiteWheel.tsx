@@ -1,29 +1,11 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { wheelApi, type WheelPrize, type SpinResult, type SpinHistoryItem } from '@/api/wheel';
 import LiteFortuneWheel from '@/components/lite/LiteFortuneWheel';
-import { usePlatform, useHaptic } from '@/platform';
-import { useNotify } from '@/platform/hooks/useNotify';
+import { useHaptic } from '@/platform';
 import { LiteLayout } from '@/components/lite/LiteLayout';
 import { PrimaryButton } from '@/components/lite/PrimaryButton';
-import { GhostButton } from '@/components/lite/GhostButton';
-
-const StarIcon = () => (
-  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
-    />
-  </svg>
-);
 
 const HistoryIcon = () => (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -64,31 +46,6 @@ const LITE_SECTOR_COLORS = [
   '#525252',
 ];
 
-function calculateRotationForPrize(prizes: WheelPrize[], result: SpinResult): number {
-  let prizeIndex = prizes.findIndex(
-    (p) => p.display_name === result.prize_display_name && p.emoji === result.emoji,
-  );
-
-  if (prizeIndex === -1) {
-    prizeIndex = prizes.findIndex((p) => p.display_name === result.prize_display_name);
-  }
-
-  if (prizeIndex === -1) {
-    prizeIndex = prizes.findIndex(
-      (p) => p.emoji === result.emoji && p.prize_type === result.prize_type,
-    );
-  }
-
-  if (prizeIndex === -1) {
-    return Math.random() * 360;
-  }
-
-  const sectorAngle = 360 / prizes.length;
-  const baseAngle = prizeIndex * sectorAngle + sectorAngle / 2;
-  const offset = (Math.random() - 0.5) * sectorAngle * 0.6;
-  return 360 - baseAngle + offset;
-}
-
 const glassCard =
   'rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-[8px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]';
 
@@ -127,22 +84,13 @@ function LiteLegend({ prizes }: { prizes: WheelPrize[] }) {
 export default function LiteWheel() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { openInvoice, capabilities } = usePlatform();
   const haptic = useHaptic();
-  const notify = useNotify();
 
   const [isSpinning, setIsSpinning] = useState(false);
   const [targetRotation, setTargetRotation] = useState<number | null>(null);
   const [spinResult, setSpinResult] = useState<SpinResult | null>(null);
-  const [paymentType, setPaymentType] = useState<'telegram_stars' | 'subscription_days'>(
-    'telegram_stars',
-  );
-  const [isPayingStars, setIsPayingStars] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const [legendExpanded, setLegendExpanded] = useState(false);
-  const [showStarsConfirm, setShowStarsConfirm] = useState(false);
-  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<number | null>(null);
-  const paymentTypeInitialized = useRef(false);
 
   const {
     data: config,
@@ -158,234 +106,8 @@ export default function LiteWheel() {
     queryFn: () => wheelApi.getHistory(1, 10),
   });
 
-  useEffect(() => {
-    if (!config || paymentTypeInitialized.current) return;
-    paymentTypeInitialized.current = true;
-
-    const starsEnabled = config.spin_cost_stars_enabled && config.spin_cost_stars;
-    const daysEnabled = config.spin_cost_days_enabled && config.spin_cost_days;
-
-    if (starsEnabled) {
-      setPaymentType('telegram_stars');
-    } else if (daysEnabled) {
-      setPaymentType('subscription_days');
-    }
-
-    if (config.eligible_subscriptions?.length === 1) {
-      setSelectedSubscriptionId(config.eligible_subscriptions[0].id);
-    }
-  }, [config]);
-
-  const pollForSpinResult = useCallback(
-    async (signal: AbortSignal, maxAttempts = 15, delayMs = 800) => {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      if (signal.aborted) return null;
-
-      let historyBefore;
-      try {
-        historyBefore = await wheelApi.getHistory(1, 1);
-      } catch {
-        historyBefore = { items: [], total: 0 };
-      }
-      const lastSpinIdBefore = historyBefore.items.length > 0 ? historyBefore.items[0].id : 0;
-
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        if (signal.aborted) return null;
-
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-
-        if (signal.aborted) return null;
-
-        try {
-          const historyAfter = await wheelApi.getHistory(1, 1);
-
-          if (historyAfter.items.length > 0) {
-            const latestSpin = historyAfter.items[0];
-            if (lastSpinIdBefore === 0 || latestSpin.id > lastSpinIdBefore) {
-              return {
-                success: true,
-                prize_id: latestSpin.id,
-                prize_type: latestSpin.prize_type,
-                prize_value: latestSpin.prize_value,
-                prize_display_name: latestSpin.prize_display_name,
-                emoji: latestSpin.emoji,
-                color: latestSpin.color,
-                rotation_degrees: 0,
-                message:
-                  latestSpin.prize_type === 'nothing'
-                    ? t('wheel.noPrize')
-                    : `${t('wheel.youWon')} ${latestSpin.prize_display_name}!`,
-                promocode: null,
-                error: null,
-              } as SpinResult;
-            }
-          }
-        } catch {
-          // continue polling
-        }
-      }
-
-      return null;
-    },
-    [t],
-  );
-
-  const pendingStarsResultRef = useRef<SpinResult | null>(null);
-  const isStarsSpinRef = useRef(false);
-  const pollingAbortRef = useRef<AbortController | null>(null);
-  const preOpenedWindowRef = useRef<Window | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (pollingAbortRef.current) {
-        pollingAbortRef.current.abort();
-      }
-    };
-  }, []);
-
-  const starsInvoiceMutation = useMutation({
-    mutationFn: wheelApi.createStarsInvoice,
-    onSuccess: async (data) => {
-      if (capabilities.hasInvoice) {
-        const status = await openInvoice(data.invoice_url);
-
-        if (status === 'paid') {
-          isStarsSpinRef.current = true;
-          pendingStarsResultRef.current = null;
-
-          if (pollingAbortRef.current) {
-            pollingAbortRef.current.abort();
-          }
-          pollingAbortRef.current = new AbortController();
-
-          const abortSignal = pollingAbortRef.current.signal;
-          pollForSpinResult(abortSignal)
-            .then((result) => {
-              if (abortSignal.aborted) return;
-
-              queryClient.invalidateQueries({ queryKey: ['wheel-config'] });
-              queryClient.invalidateQueries({ queryKey: ['wheel-history'] });
-
-              setIsPayingStars(false);
-
-              if (result) {
-                pendingStarsResultRef.current = result;
-                const rotation = config?.prizes
-                  ? calculateRotationForPrize(config.prizes, result)
-                  : Math.random() * 360;
-                setTargetRotation(rotation);
-              } else {
-                pendingStarsResultRef.current = {
-                  success: true,
-                  prize_id: null,
-                  prize_type: null,
-                  prize_value: 0,
-                  prize_display_name: '',
-                  emoji: '🎰',
-                  color: '#FFD700',
-                  rotation_degrees: 0,
-                  message: t('wheel.starsPaymentSuccessCheckHistory'),
-                  promocode: null,
-                  error: null,
-                };
-                setTargetRotation(Math.random() * 360);
-              }
-
-              setIsSpinning(true);
-            })
-            .catch(() => {
-              if (abortSignal.aborted) return;
-
-              setIsPayingStars(false);
-              pendingStarsResultRef.current = {
-                success: true,
-                prize_id: null,
-                prize_type: null,
-                prize_value: 0,
-                prize_display_name: '',
-                emoji: '🎰',
-                color: '#FFD700',
-                rotation_degrees: 0,
-                message: t('wheel.starsPaymentSuccessCheckHistory'),
-                promocode: null,
-                error: null,
-              };
-              setTargetRotation(Math.random() * 360);
-              setIsSpinning(true);
-            });
-        } else if (status !== 'cancelled') {
-          setIsPayingStars(false);
-          setSpinResult({
-            success: false,
-            prize_id: null,
-            prize_type: null,
-            prize_value: 0,
-            prize_display_name: '',
-            emoji: '😔',
-            color: '#EF4444',
-            rotation_degrees: 0,
-            message: t('wheel.starsPaymentFailed'),
-            promocode: null,
-            error: 'payment_failed',
-          });
-        } else {
-          setIsPayingStars(false);
-        }
-      } else {
-        setIsPayingStars(false);
-        if (preOpenedWindowRef.current) {
-          preOpenedWindowRef.current.location.href = data.invoice_url;
-          preOpenedWindowRef.current = null;
-        }
-        setSpinResult({
-          success: true,
-          prize_id: null,
-          prize_type: null,
-          prize_value: 0,
-          prize_display_name: '',
-          emoji: '⭐',
-          color: '#FFD700',
-          rotation_degrees: 0,
-          message: t('wheel.starsPaymentRedirected'),
-          promocode: null,
-          error: null,
-        });
-      }
-    },
-    onError: () => {
-      setIsPayingStars(false);
-      if (preOpenedWindowRef.current) {
-        preOpenedWindowRef.current.close();
-        preOpenedWindowRef.current = null;
-      }
-      setSpinResult({
-        success: false,
-        prize_id: null,
-        prize_type: null,
-        prize_value: 0,
-        prize_display_name: '',
-        emoji: '😔',
-        color: '#EF4444',
-        rotation_degrees: 0,
-        message: t('wheel.errors.networkError'),
-        promocode: null,
-        error: 'network_error',
-      });
-    },
-  });
-
-  const handleDirectStarsPay = () => {
-    setShowStarsConfirm(false);
-    setIsPayingStars(true);
-    if (!capabilities.hasInvoice) {
-      preOpenedWindowRef.current = window.open('about:blank', '_blank') || null;
-    }
-    starsInvoiceMutation.mutate();
-  };
-
   const spinMutation = useMutation({
-    mutationFn: () => wheelApi.spin(paymentType, selectedSubscriptionId ?? undefined),
+    mutationFn: () => wheelApi.spin('tickets'),
     onSuccess: (result) => {
       if (result.success) {
         setTargetRotation(result.rotation_degrees);
@@ -413,72 +135,27 @@ export default function LiteWheel() {
     },
   });
 
-  const handleSpin = () => {
-    if (!config?.can_spin || isSpinning) return;
-    setIsSpinning(true);
-    spinMutation.mutate();
-  };
-
-  const starsEnabled = !!(config?.spin_cost_stars_enabled && config?.spin_cost_stars);
-  const daysEnabled = !!(config?.spin_cost_days_enabled && config?.spin_cost_days);
-  const bothMethodsAvailable = !!(starsEnabled && daysEnabled);
-
+  const ticketsBalance = config?.spin_tickets_balance ?? 0;
+  const ticketsCost = config?.spin_cost_tickets ?? 1;
+  const hasEnoughTickets = ticketsBalance >= ticketsCost;
   const dailyLimitReached = !!(
     config &&
     config.daily_limit > 0 &&
     config.user_spins_today >= config.daily_limit
   );
-  const noSubscription = !config?.has_subscription;
-  const needsSubscriptionPick =
-    paymentType === 'subscription_days' &&
-    !!config?.eligible_subscriptions &&
-    config.eligible_subscriptions.length > 1 &&
-    !selectedSubscriptionId;
 
-  const handleUnifiedSpin = () => {
-    if (noSubscription) return;
-    if (paymentType === 'telegram_stars') {
-      if (!starsEnabled) {
-        notify.warning(t('wheel.starsNotAvailable'));
-        return;
-      }
-      setShowStarsConfirm(true);
-    } else {
-      handleSpin();
-    }
+  const spinDisabled = isSpinning || !hasEnoughTickets || dailyLimitReached || !config?.can_spin;
+
+  const handleSpin = () => {
+    if (spinDisabled || !config) return;
+    setIsSpinning(true);
+    spinMutation.mutate();
   };
 
   const handleSpinComplete = useCallback(() => {
     setIsSpinning(false);
 
-    if (isStarsSpinRef.current) {
-      isStarsSpinRef.current = false;
-
-      if (pendingStarsResultRef.current) {
-        setSpinResult(pendingStarsResultRef.current);
-        if (pendingStarsResultRef.current.prize_type === 'nothing') {
-          haptic.notification('warning');
-        } else {
-          haptic.notification('success');
-        }
-        pendingStarsResultRef.current = null;
-      } else {
-        setSpinResult({
-          success: true,
-          prize_id: null,
-          prize_type: null,
-          prize_value: 0,
-          prize_display_name: '',
-          emoji: '🎰',
-          color: '#FFD700',
-          rotation_degrees: 0,
-          message: t('wheel.starsPaymentSuccessCheckHistory'),
-          promocode: null,
-          error: null,
-        });
-        haptic.notification('success');
-      }
-    } else if (spinResult) {
+    if (spinResult) {
       if (spinResult.success && spinResult.prize_type !== 'nothing') {
         haptic.notification('success');
       } else {
@@ -488,20 +165,12 @@ export default function LiteWheel() {
 
     queryClient.invalidateQueries({ queryKey: ['wheel-config'] });
     queryClient.invalidateQueries({ queryKey: ['wheel-history'] });
-  }, [queryClient, t, haptic, spinResult]);
+  }, [queryClient, haptic, spinResult]);
 
   const closeResultModal = () => {
     setSpinResult(null);
     setTargetRotation(null);
   };
-
-  const spinDisabled =
-    isSpinning ||
-    isPayingStars ||
-    dailyLimitReached ||
-    noSubscription ||
-    needsSubscriptionPick ||
-    (paymentType === 'telegram_stars' ? !starsEnabled : !config?.can_spin);
 
   if (isLoading) {
     return (
@@ -539,21 +208,40 @@ export default function LiteWheel() {
     );
   }
 
+  // Optimistic post-spin balance so the chip updates immediately on click,
+  // before the next config refetch lands.
+  const displayedBalance = isSpinning ? Math.max(0, ticketsBalance - ticketsCost) : ticketsBalance;
+
   return (
     <LiteLayout variant={{ title: t('wheel.title') }}>
       <div className="flex flex-col gap-3 pb-4 pt-1.5">
-        {/* Spins remaining pill */}
+        {/* Tickets balance + cost */}
+        <div className="flex items-center justify-center gap-2">
+          <div
+            className={[
+              'inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5',
+              'border-subo-canary/[0.28] bg-subo-canary/[0.10]',
+              'font-subo text-[14px] font-medium tracking-[-0.005em] text-subo-canary',
+              'shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]',
+            ].join(' ')}
+          >
+            <span className="text-base leading-none">🎟</span>
+            <span className="text-subo-textMute">Билеты:</span>
+            <span className="font-semibold text-subo-canaryHi [font-feature-settings:'tnum'_1]">
+              {displayedBalance}
+            </span>
+          </div>
+          <div className="inline-flex items-center rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 font-subo text-[12px] text-subo-textMute">
+            {ticketsCost} за вращение
+          </div>
+        </div>
+
+        {/* Daily limit pill */}
         {config.daily_limit > 0 && (
           <div className="flex justify-center">
-            <div
-              className={[
-                'inline-flex items-center gap-2 rounded-full border px-3 py-1.5',
-                'border-subo-canary/[0.20] bg-subo-canary/[0.08]',
-                'font-subo text-[13px] font-medium tracking-[-0.005em] text-subo-canary',
-              ].join(' ')}
-            >
-              <span className="text-subo-textMute">{t('wheel.spinsRemaining')}:</span>
-              <span className="font-semibold">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1 font-subo text-[12px] text-subo-textMute">
+              <span>{t('wheel.spinsRemaining')}:</span>
+              <span className="font-semibold text-subo-text">
                 {Math.max(0, config.daily_limit - config.user_spins_today)}/{config.daily_limit}
               </span>
             </div>
@@ -577,149 +265,41 @@ export default function LiteWheel() {
             />
           </div>
 
-          {/* Payment selector */}
-          {(starsEnabled || daysEnabled) && (
-            <div className="mt-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-1.5">
-              <p className="mb-1 mt-0.5 text-center font-subo text-[11px] uppercase tracking-[0.06em] text-subo-textMute">
-                {t('wheel.spinCost')}
-              </p>
-              <div className={`grid gap-1 ${bothMethodsAvailable ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                {starsEnabled && (
-                  <button
-                    type="button"
-                    onClick={() => setPaymentType('telegram_stars')}
-                    disabled={isSpinning}
-                    className={[
-                      'flex items-center justify-center gap-2 rounded-xl px-3 py-2.5',
-                      'font-subo text-[13px] font-medium tracking-[-0.005em] transition-all',
-                      paymentType === 'telegram_stars'
-                        ? 'bg-subo-canary/[0.14] text-subo-canary shadow-[inset_0_0_0_1px_rgba(255,215,0,0.25)]'
-                        : 'text-subo-textSoft hover:text-subo-text',
-                    ].join(' ')}
-                  >
-                    <StarIcon />
-                    {`${config.spin_cost_stars} ⭐`}
-                  </button>
-                )}
-                {daysEnabled && (
-                  <button
-                    type="button"
-                    onClick={() => setPaymentType('subscription_days')}
-                    disabled={isSpinning}
-                    className={[
-                      'flex items-center justify-center gap-2 rounded-xl px-3 py-2.5',
-                      'font-subo text-[13px] font-medium tracking-[-0.005em] transition-all',
-                      paymentType === 'subscription_days'
-                        ? 'bg-subo-canary/[0.14] text-subo-canary shadow-[inset_0_0_0_1px_rgba(255,215,0,0.25)]'
-                        : 'text-subo-textSoft hover:text-subo-text',
-                    ].join(' ')}
-                  >
-                    <CalendarIcon />
-                    {t('wheel.days', { count: config.spin_cost_days ?? 0 })}
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Multi-subscription picker */}
-          {paymentType === 'subscription_days' &&
-            config.eligible_subscriptions &&
-            config.eligible_subscriptions.length > 1 && (
-              <div className="mt-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
-                <p className="mb-2 text-center font-subo text-[11px] uppercase tracking-[0.06em] text-subo-textMute">
-                  {t('wheel.selectSubscription', 'Выберите подписку')}
-                </p>
-                <div className="space-y-1.5">
-                  {config.eligible_subscriptions.map((sub) => (
-                    <button
-                      key={sub.id}
-                      type="button"
-                      onClick={() => setSelectedSubscriptionId(sub.id)}
-                      disabled={isSpinning}
-                      className={[
-                        'flex w-full items-center justify-between rounded-xl px-3 py-2 font-subo text-[13px] transition-all',
-                        selectedSubscriptionId === sub.id
-                          ? 'bg-subo-canary/[0.14] text-subo-canary shadow-[inset_0_0_0_1px_rgba(255,215,0,0.25)]'
-                          : 'text-subo-textSoft hover:text-subo-text',
-                      ].join(' ')}
-                    >
-                      <span className="font-medium">
-                        {sub.tariff_name || t('subscription.defaultName', 'Подписка')}
-                      </span>
-                      <span className="text-[12px] opacity-70">
-                        {sub.days_left} {t('common.units.days', 'дней')}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-          {/* Stars confirm */}
-          {showStarsConfirm && !isSpinning && !isPayingStars ? (
-            <div className="mt-4 space-y-3 rounded-2xl border border-subo-canary/[0.20] bg-subo-canary/[0.06] p-3.5">
-              <p className="text-center font-subo text-[13px] text-subo-textSoft">
-                {t('wheel.confirmStarsPayment')}
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <GhostButton onClick={() => setShowStarsConfirm(false)}>
-                  {t('common.cancel')}
-                </GhostButton>
-                <PrimaryButton onClick={handleDirectStarsPay}>
-                  {t('wheel.payStars', { count: config.spin_cost_stars ?? 0 })}
-                </PrimaryButton>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-4">
-              <PrimaryButton onClick={handleUnifiedSpin} disabled={spinDisabled}>
-                {isSpinning || isPayingStars ? (
-                  <span className="inline-flex items-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-subo-canaryInk/40 border-t-subo-canaryInk" />
-                    {isSpinning ? t('wheel.spinning') : t('wheel.processingPayment')}
-                  </span>
-                ) : (
-                  t('wheel.spin')
-                )}
-              </PrimaryButton>
-            </div>
-          )}
+          <div className="mt-6">
+            <PrimaryButton onClick={handleSpin} disabled={spinDisabled}>
+              {isSpinning ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-subo-canaryInk/40 border-t-subo-canaryInk" />
+                  {t('wheel.spinning')}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <span>🎟</span>
+                  {t('wheel.spin')}
+                </span>
+              )}
+            </PrimaryButton>
+          </div>
 
           {/* Hints */}
-          {!isSpinning && noSubscription && (
+          {!isSpinning && !hasEnoughTickets && (
             <div className="mt-3 rounded-2xl border border-subo-amber/[0.22] bg-subo-amber/[0.08] p-3.5 text-center">
               <p className="font-subo text-[13px] text-subo-amber">
-                {t('wheel.errors.noSubscription')}
+                Купите или продлите подписку чтобы получить билеты
               </p>
             </div>
           )}
-          {!isSpinning &&
-            !noSubscription &&
-            paymentType !== 'telegram_stars' &&
-            !config.can_spin && (
-              <div className="mt-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5 text-center">
-                <p className="font-subo text-[13px] text-subo-textMute">
-                  {config.can_spin_reason === 'daily_limit_reached'
-                    ? t('wheel.errors.dailyLimitReached')
-                    : t('wheel.errors.cannotSpin')}
-                </p>
-              </div>
-            )}
-          {!isSpinning &&
-            !noSubscription &&
-            paymentType === 'telegram_stars' &&
-            dailyLimitReached && (
-              <div className="mt-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5 text-center">
-                <p className="font-subo text-[13px] text-subo-textMute">
-                  {t('wheel.errors.dailyLimitReached')}
-                </p>
-              </div>
-            )}
-          {!isSpinning && needsSubscriptionPick && (
-            <div className="mt-3 rounded-2xl border border-subo-amber/[0.22] bg-subo-amber/[0.08] p-3.5 text-center">
-              <p className="font-subo text-[13px] text-subo-amber">
-                {t('wheel.errors.selectSubscription', 'Выберите подписку для списания дней')}
+          {!isSpinning && hasEnoughTickets && dailyLimitReached && (
+            <div className="mt-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5 text-center">
+              <p className="font-subo text-[13px] text-subo-textMute">
+                {t('wheel.errors.dailyLimitReached')}
+              </p>
+            </div>
+          )}
+          {!isSpinning && hasEnoughTickets && !dailyLimitReached && !config.can_spin && (
+            <div className="mt-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5 text-center">
+              <p className="font-subo text-[13px] text-subo-textMute">
+                {t('wheel.errors.cannotSpin')}
               </p>
             </div>
           )}
@@ -847,10 +427,7 @@ export default function LiteWheel() {
                         </div>
                       </div>
                       <div className="whitespace-nowrap font-subo text-[12px] text-subo-textSoft">
-                        -
-                        {item.payment_type === 'telegram_stars'
-                          ? `${item.payment_amount} ⭐`
-                          : `${item.payment_amount}${t('wheel.days').charAt(0)}`}
+                        -{item.payment_amount} 🎟
                       </div>
                     </div>
                   ))}
