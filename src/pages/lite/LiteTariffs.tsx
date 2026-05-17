@@ -114,6 +114,12 @@ export default function LiteTariffs() {
       }
 
       if (isTariffsMode && currentSubscriptionId !== undefined) {
+        // Selecting the tariff the user is already on = extend/renew it.
+        // switchTariff rejects same-tariff ("Already on this tariff"); purchaseTariff is the extend path.
+        if (currentTariffId !== null && selectedTariff.id === currentTariffId) {
+          return await subscriptionApi.purchaseTariff(selectedTariff.id, selectedDays);
+        }
+
         try {
           return await subscriptionApi.switchTariff(selectedTariff.id, currentSubscriptionId);
         } catch (err) {
