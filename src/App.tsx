@@ -85,6 +85,7 @@ const LiteBalanceTopUp = lazyWithRetry(() => import('./pages/lite/LiteBalanceTop
 const LiteSupport = lazyWithRetry(() => import('./pages/lite/LiteSupport'));
 const LiteInfo = lazyWithRetry(() => import('./pages/lite/LiteInfo'));
 const LiteInfoPage = lazyWithRetry(() => import('./pages/lite/LiteInfoPage'));
+const LiteWheel = lazyWithRetry(() => import('./pages/lite/LiteWheel'));
 
 // Admin pages - lazy load (only for admins)
 const AdminPanel = lazyWithRetry(() => import('./pages/AdminPanel'));
@@ -391,6 +392,16 @@ function App() {
             <ProtectedRoute withLayout={false}>
               <LazyPage>
                 <LiteInfoPage />
+              </LazyPage>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lite/wheel"
+          element={
+            <ProtectedRoute withLayout={false}>
+              <LazyPage>
+                <LiteWheel />
               </LazyPage>
             </ProtectedRoute>
           }

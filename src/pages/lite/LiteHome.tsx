@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { subscriptionApi } from '@/api/subscription';
+import { wheelApi } from '@/api/wheel';
 import { API } from '@/config/constants';
 import { plural } from '@/utils/plural';
 import { LiteLayout } from '@/components/lite/LiteLayout';
@@ -182,6 +183,15 @@ export default function LiteHome() {
 
   const minMonthlyRubles = minMonthlyKopeks ? Math.round(minMonthlyKopeks / 100) : null;
 
+  // Fortune Wheel feature gate — show entry only when admin enabled the wheel.
+  const { data: wheelConfig } = useQuery({
+    queryKey: ['wheel-config'],
+    queryFn: wheelApi.getConfig,
+    staleTime: 60_000,
+    retry: false,
+  });
+  const wheelEnabled = !!wheelConfig?.is_enabled;
+
   const onSelectTariff = () => navigate('/lite/tariffs');
   const onTrial = () => activateTrial.mutate();
   const onConnect = () => navigate('/lite/connect');
@@ -238,6 +248,7 @@ export default function LiteHome() {
             period={calcPeriod(subscription.startDate, subscription.endDate)}
             onChange={onTariffChange}
           />
+          {wheelEnabled && <WheelEntryCard onClick={() => navigate('/lite/wheel')} />}
         </div>
       )}
 
@@ -262,8 +273,45 @@ export default function LiteHome() {
             period={calcPeriod(subscription.startDate, subscription.endDate)}
             onChange={onTariffChange}
           />
+          {wheelEnabled && <WheelEntryCard onClick={() => navigate('/lite/wheel')} />}
         </div>
       )}
     </LiteLayout>
+  );
+}
+
+function WheelEntryCard({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative flex w-full cursor-pointer items-center gap-3.5 overflow-hidden rounded-2xl border border-subo-canary/[0.18] bg-white/[0.03] px-4 py-3.5 text-left shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-[8px] transition-colors hover:bg-white/[0.05]"
+      style={{
+        background:
+          'radial-gradient(140% 90% at 100% 0%, rgba(255,215,0,0.18), transparent 55%), rgba(255,255,255,0.025)',
+      }}
+    >
+      <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-subo-canary/[0.30] bg-subo-canary/[0.10] text-xl">
+        🎰
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="font-subo text-[14px] font-semibold tracking-[-0.005em] text-white">
+          Колесо удачи
+        </div>
+        <div className="font-subo text-[12px] text-subo-textMute">Крути и выигрывай призы</div>
+      </div>
+      <div className="flex-none text-subo-canary transition-transform group-hover:translate-x-0.5">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </button>
   );
 }
