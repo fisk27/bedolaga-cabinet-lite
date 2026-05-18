@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { LiteLayout } from '@/components/lite/LiteLayout';
 import { PrimaryButton } from '@/components/lite/PrimaryButton';
-import { GhostButton } from '@/components/lite/GhostButton';
 import { balanceApi } from '@/api/balance';
 import { useCloseOnSuccessNotification } from '@/store/successNotification';
 import type { PaymentMethodOption } from '@/types';
@@ -15,6 +14,17 @@ function getPreferredOptionId(options: PaymentMethodOption[] | null | undefined)
   if (!options || options.length === 0) return null;
   const sbp = options.find((o) => /sbp|сбп/i.test(o.id) || /sbp|сбп/i.test(o.name));
   return (sbp ?? options[0]).id;
+}
+
+// SBP redirects to the bank app, which can't happen inside Telegram's webview —
+// must hand off to the system browser via Telegram WebApp.openLink.
+function openExternal(url: string) {
+  const tg = window.Telegram?.WebApp;
+  if (tg && typeof tg.openLink === 'function') {
+    tg.openLink(url, { try_instant_view: false });
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 export default function LiteBalanceTopUp() {
@@ -29,10 +39,7 @@ export default function LiteBalanceTopUp() {
   );
   const [selectedMethodId, setSelectedMethodId] = useState<string | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [copyError, setCopyError] = useState(false);
 
   const { data: methods, isLoading: methodsLoading } = useQuery({
     queryKey: ['payment-methods'],
@@ -75,10 +82,7 @@ export default function LiteBalanceTopUp() {
       balanceApi.createTopUp(amountKopeks, selectedMethodId!, selectedOptionId ?? undefined),
     onSuccess: (result) => {
       if (result.payment_url) {
-        setPaymentUrl(result.payment_url);
-        // Don't auto-open — popup blockers (iOS Safari, Telegram WebView) silently block
-        // popups from async callbacks. User clicks "Открыть оплату" button in the success
-        // card, which is a direct user gesture and always works.
+        openExternal(result.payment_url);
       }
     },
     onError: (err) => {
@@ -99,18 +103,6 @@ export default function LiteBalanceTopUp() {
 
   useCloseOnSuccessNotification(handleSuccess);
 
-  const handleCopy = async () => {
-    if (!paymentUrl) return;
-    try {
-      await navigator.clipboard.writeText(paymentUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopyError(true);
-      setTimeout(() => setCopyError(false), 2000);
-    }
-  };
-
   const onAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value.replace(/\D/g, '').slice(0, 6);
     setAmountRubles(v === '' ? 0 : parseInt(v, 10));
@@ -122,7 +114,7 @@ export default function LiteBalanceTopUp() {
   return (
     <LiteLayout variant={{ title: 'Пополнение' }} backFallback="/lite/balance">
       <div className="flex flex-col gap-4 pb-6 pt-3">
-        <div className={cn('flex flex-col gap-4', paymentUrl && 'pointer-events-none opacity-60')}>
+        <div className="flex flex-col gap-4">
           <div className="rounded-2xl border border-subo-hairline bg-subo-surface p-5 text-center">
             <div className="flex items-baseline justify-center gap-2">
               <input
@@ -243,39 +235,16 @@ export default function LiteBalanceTopUp() {
           )}
         </div>
 
-        {!paymentUrl ? (
-          <div className="pt-2">
-            <PrimaryButton onClick={() => topUpMutation.mutate()} disabled={ctaDisabled}>
-              {ctaLabel}
-            </PrimaryButton>
-            {error && (
-              <div className="mt-3 rounded-xl border border-error-500/30 bg-error-500/10 px-4 py-3 text-sm text-error-400">
-                {error}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 rounded-3xl border border-subo-amber/30 bg-subo-amber/[0.04] p-5 text-center">
-            <div className="font-subo text-[18px] font-semibold text-subo-text">Платёж создан</div>
-
-            <PrimaryButton
-              onClick={() => {
-                window.location.href = paymentUrl;
-              }}
-            >
-              Открыть оплату
-            </PrimaryButton>
-
-            <GhostButton onClick={handleCopy}>
-              {copyError ? 'Ошибка' : copied ? 'Скопировано ✓' : 'Скопировать ссылку'}
-            </GhostButton>
-
-            <p className="font-subo text-[13px] leading-[1.45] text-subo-textSoft">
-              Нажмите «Открыть оплату», чтобы перейти к оплате. После оплаты вы автоматически
-              вернётесь сюда.
-            </p>
-          </div>
-        )}
+        <div className="pt-2">
+          <PrimaryButton onClick={() => topUpMutation.mutate()} disabled={ctaDisabled}>
+            {ctaLabel}
+          </PrimaryButton>
+          {error && (
+            <div className="mt-3 rounded-xl border border-error-500/30 bg-error-500/10 px-4 py-3 text-sm text-error-400">
+              {error}
+            </div>
+          )}
+        </div>
       </div>
     </LiteLayout>
   );
