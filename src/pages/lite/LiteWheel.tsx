@@ -326,21 +326,10 @@ export default function LiteWheel() {
               <div className="space-y-1.5">
                 {mainPrizes.map((prize) => {
                   const winner = prize.current_month_winner;
-                  const available = prize.is_available === true;
-                  let statusClass: string;
-                  let statusText: string;
-                  if (winner) {
-                    statusClass =
-                      'border-success-500/[0.30] bg-success-500/[0.10] text-success-400';
-                    statusText = `Выиграл(а) ${winner} ✅`;
-                  } else if (available) {
-                    statusClass =
-                      'border-subo-canary/[0.28] bg-subo-canary/[0.10] text-subo-canary';
-                    statusText = 'Ещё не разыгран 🔥';
-                  } else {
-                    statusClass = 'border-white/[0.06] bg-white/[0.02] text-subo-textMute';
-                    statusText = 'Скоро...';
-                  }
+                  const statusClass = winner
+                    ? 'border-success-500/[0.30] bg-success-500/[0.10] text-success-400'
+                    : 'border-subo-canary/[0.28] bg-subo-canary/[0.10] text-subo-canary';
+                  const statusText = winner ? `Выиграл(а) ${winner} ✅` : 'Не разыгран 🔥';
                   return (
                     <div
                       key={prize.id}
