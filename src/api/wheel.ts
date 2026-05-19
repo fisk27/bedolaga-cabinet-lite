@@ -6,6 +6,9 @@ export interface WheelPrize {
   emoji: string;
   color: string;
   prize_type: string;
+  monthly_limit?: number | null;
+  is_available?: boolean;
+  current_month_winner?: string | null;
 }
 
 export interface EligibleSubscription {

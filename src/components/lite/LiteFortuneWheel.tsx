@@ -91,15 +91,22 @@ const LiteFortuneWheel = memo(function LiteFortuneWheel({
             A ${hubRadius} ${hubRadius} 0 ${largeArc} 0 ${x1Inner} ${y1Inner} Z`;
   };
 
-  const getEmojiPosition = (index: number) => {
-    const angle = (index * sectorAngle + sectorAngle / 2 - 90) * (Math.PI / 180);
-    const emojiRadius = prizeRadius * 0.75;
+  const getSectorContent = (index: number) => {
+    const angleDeg = index * sectorAngle + sectorAngle / 2;
+    const angleRad = (angleDeg - 90) * (Math.PI / 180);
+    const textRadius = prizeRadius * 0.6;
+    const emojiRadius = prizeRadius * 0.82;
     return {
-      x: center + emojiRadius * Math.cos(angle),
-      y: center + emojiRadius * Math.sin(angle),
-      rotation: index * sectorAngle + sectorAngle / 2,
+      textX: center + textRadius * Math.cos(angleRad),
+      textY: center + textRadius * Math.sin(angleRad),
+      emojiX: center + emojiRadius * Math.cos(angleRad),
+      emojiY: center + emojiRadius * Math.sin(angleRad),
+      textRotation: angleDeg - 90,
+      emojiRotation: angleDeg,
     };
   };
+
+  const truncateLabel = (s: string, max = 12) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
 
   const getSectorColor = (index: number, baseColor?: string) => {
     if (baseColor) return baseColor;
@@ -315,22 +322,43 @@ const LiteFortuneWheel = memo(function LiteFortuneWheel({
               );
             })}
 
-            {/* Prize emojis */}
+            {/* Prize labels + emojis */}
             {prizes.map((prize, index) => {
-              const pos = getEmojiPosition(index);
+              const pos = getSectorContent(index);
               return (
-                <text
-                  key={`emoji-${prize.id}`}
-                  x={pos.x}
-                  y={pos.y}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize={prizes.length <= 6 ? '32' : '26'}
-                  transform={`rotate(${pos.rotation}, ${pos.x}, ${pos.y})`}
-                  style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.65))' }}
-                >
-                  {prize.emoji}
-                </text>
+                <g key={`content-${prize.id}`}>
+                  <text
+                    x={pos.textX}
+                    y={pos.textY}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={prizes.length <= 6 ? '11' : '10'}
+                    fontWeight="700"
+                    fill="#FFFFFF"
+                    transform={`rotate(${pos.textRotation}, ${pos.textX}, ${pos.textY})`}
+                    style={{
+                      paintOrder: 'stroke',
+                      stroke: 'rgba(0,0,0,0.55)',
+                      strokeWidth: 2,
+                      strokeLinejoin: 'round',
+                      filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.7))',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    {truncateLabel(prize.display_name)}
+                  </text>
+                  <text
+                    x={pos.emojiX}
+                    y={pos.emojiY}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize="14"
+                    transform={`rotate(${pos.emojiRotation}, ${pos.emojiX}, ${pos.emojiY})`}
+                    style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.65))' }}
+                  >
+                    {prize.emoji}
+                  </text>
+                </g>
               );
             })}
           </g>

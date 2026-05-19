@@ -248,6 +248,60 @@ export default function LiteWheel() {
           </div>
         )}
 
+        {/* Monthly prizes banner */}
+        {(() => {
+          const monthlyPrizes = config.prizes.filter((p) => (p.monthly_limit ?? 0) > 0);
+          if (monthlyPrizes.length === 0) return null;
+          return (
+            <div className={`${glassCard} px-4 py-3.5`}>
+              <div className="mb-2.5 inline-flex items-center gap-2 font-subo text-[14px] font-semibold text-subo-canary">
+                <span>🎁</span>
+                <span>Призы месяца</span>
+              </div>
+              <div className="space-y-1.5">
+                {monthlyPrizes.map((prize) => {
+                  const winner = prize.current_month_winner;
+                  const available = prize.is_available === true;
+                  let statusClass: string;
+                  let statusText: string;
+                  if (winner) {
+                    statusClass =
+                      'border-success-500/[0.30] bg-success-500/[0.10] text-success-400';
+                    statusText = `Выиграл(а) ${winner} ✅`;
+                  } else if (available) {
+                    statusClass =
+                      'border-subo-canary/[0.28] bg-subo-canary/[0.10] text-subo-canary';
+                    statusText = 'Ещё не разыгран! 🔥';
+                  } else {
+                    statusClass = 'border-white/[0.06] bg-white/[0.02] text-subo-textMute';
+                    statusText = 'Скоро...';
+                  }
+                  return (
+                    <div
+                      key={prize.id}
+                      className="flex items-center justify-between gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] p-2.5"
+                    >
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center text-lg">
+                          {prize.emoji}
+                        </div>
+                        <div className="truncate font-subo text-[13px] font-medium text-subo-text">
+                          {prize.display_name}
+                        </div>
+                      </div>
+                      <div
+                        className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-0.5 font-subo text-[11px] font-medium ${statusClass}`}
+                      >
+                        {statusText}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Wheel card */}
         <div
           className={`${glassCard} relative overflow-hidden p-5`}
