@@ -94,19 +94,34 @@ const LiteFortuneWheel = memo(function LiteFortuneWheel({
   const getSectorContent = (index: number) => {
     const angleDeg = index * sectorAngle + sectorAngle / 2;
     const angleRad = (angleDeg - 90) * (Math.PI / 180);
-    const textRadius = prizeRadius * 0.6;
-    const emojiRadius = prizeRadius * 0.82;
+    const textRadius = prizeRadius * 0.68;
     return {
       textX: center + textRadius * Math.cos(angleRad),
       textY: center + textRadius * Math.sin(angleRad),
-      emojiX: center + emojiRadius * Math.cos(angleRad),
-      emojiY: center + emojiRadius * Math.sin(angleRad),
       textRotation: angleDeg - 90,
-      emojiRotation: angleDeg,
     };
   };
 
-  const truncateLabel = (s: string, max = 12) => (s.length > max ? `${s.slice(0, max - 1)}…` : s);
+  const wrapLabel = (raw: string, maxPerLine = 8): string[] => {
+    const s = raw.trim();
+    if (s.length <= 10) return [s];
+    const words = s.split(/\s+/).filter(Boolean);
+    if (words.length === 1) {
+      return [`${s.slice(0, 9)}…`];
+    }
+    let line1 = '';
+    let line2 = '';
+    for (const w of words) {
+      if (!line1 || (line1.length + 1 + w.length <= maxPerLine && !line2)) {
+        line1 = line1 ? `${line1} ${w}` : w;
+      } else {
+        line2 = line2 ? `${line2} ${w}` : w;
+      }
+    }
+    if (!line2) return [`${line1.slice(0, 9)}…`];
+    if (line2.length > maxPerLine + 2) line2 = `${line2.slice(0, maxPerLine + 1)}…`;
+    return [line1, line2];
+  };
 
   const getSectorColor = (index: number, baseColor?: string) => {
     if (baseColor) return baseColor;
@@ -322,43 +337,39 @@ const LiteFortuneWheel = memo(function LiteFortuneWheel({
               );
             })}
 
-            {/* Prize labels + emojis */}
+            {/* Prize labels */}
             {prizes.map((prize, index) => {
               const pos = getSectorContent(index);
+              const fontSize = prizes.length <= 6 ? 13 : 12;
+              const lineHeight = fontSize + 1;
+              const lines = wrapLabel(prize.display_name);
+              const firstDy = lines.length === 1 ? 0 : -((lines.length - 1) * lineHeight) / 2;
               return (
-                <g key={`content-${prize.id}`}>
-                  <text
-                    x={pos.textX}
-                    y={pos.textY}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize={prizes.length <= 6 ? '11' : '10'}
-                    fontWeight="700"
-                    fill="#FFFFFF"
-                    transform={`rotate(${pos.textRotation}, ${pos.textX}, ${pos.textY})`}
-                    style={{
-                      paintOrder: 'stroke',
-                      stroke: 'rgba(0,0,0,0.55)',
-                      strokeWidth: 2,
-                      strokeLinejoin: 'round',
-                      filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.7))',
-                      letterSpacing: '0.01em',
-                    }}
-                  >
-                    {truncateLabel(prize.display_name)}
-                  </text>
-                  <text
-                    x={pos.emojiX}
-                    y={pos.emojiY}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize="14"
-                    transform={`rotate(${pos.emojiRotation}, ${pos.emojiX}, ${pos.emojiY})`}
-                    style={{ filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.65))' }}
-                  >
-                    {prize.emoji}
-                  </text>
-                </g>
+                <text
+                  key={`label-${prize.id}`}
+                  x={pos.textX}
+                  y={pos.textY}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize={fontSize}
+                  fontWeight="800"
+                  fill="#FFFFFF"
+                  transform={`rotate(${pos.textRotation}, ${pos.textX}, ${pos.textY})`}
+                  style={{
+                    paintOrder: 'stroke',
+                    stroke: 'rgba(0,0,0,0.75)',
+                    strokeWidth: 3,
+                    strokeLinejoin: 'round',
+                    filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.85))',
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  {lines.map((line, i) => (
+                    <tspan key={i} x={pos.textX} dy={i === 0 ? firstDy : lineHeight}>
+                      {line}
+                    </tspan>
+                  ))}
+                </text>
               );
             })}
           </g>

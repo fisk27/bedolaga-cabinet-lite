@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { wheelApi, type WheelPrize, type SpinResult, type SpinHistoryItem } from '@/api/wheel';
+import { wheelApi, type SpinResult, type SpinHistoryItem } from '@/api/wheel';
 import LiteFortuneWheel from '@/components/lite/LiteFortuneWheel';
 import { useHaptic } from '@/platform';
 import { LiteLayout } from '@/components/lite/LiteLayout';
@@ -35,51 +35,8 @@ const ChevronIcon = ({ expanded }: { expanded: boolean }) => (
   </svg>
 );
 
-const LITE_SECTOR_COLORS = [
-  '#FFD700',
-  '#9CA3AF',
-  '#FFE352',
-  '#A8A29E',
-  '#E6BE00',
-  '#78716C',
-  '#FFCF40',
-  '#525252',
-];
-
 const glassCard =
   'rounded-2xl border border-white/[0.06] bg-white/[0.03] backdrop-blur-[8px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]';
-
-function LiteLegend({ prizes }: { prizes: WheelPrize[] }) {
-  const getColor = (index: number, baseColor?: string) =>
-    baseColor || LITE_SECTOR_COLORS[index % LITE_SECTOR_COLORS.length];
-
-  return (
-    <div className="space-y-1.5">
-      {prizes.map((prize, index) => {
-        const color = getColor(index, prize.color);
-        return (
-          <div
-            key={prize.id}
-            className="flex items-center gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] p-2.5"
-          >
-            <div
-              className="h-7 w-1 shrink-0 rounded-full"
-              style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}66` }}
-            />
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center text-lg">
-              {prize.emoji}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-subo text-[13px] font-medium text-subo-text">
-                {prize.display_name}
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 export default function LiteWheel() {
   const { t } = useTranslation();
@@ -90,7 +47,7 @@ export default function LiteWheel() {
   const [targetRotation, setTargetRotation] = useState<number | null>(null);
   const [spinResult, setSpinResult] = useState<SpinResult | null>(null);
   const [historyExpanded, setHistoryExpanded] = useState(false);
-  const [legendExpanded, setLegendExpanded] = useState(false);
+  const [rulesExpanded, setRulesExpanded] = useState(false);
 
   const {
     data: config,
@@ -248,60 +205,6 @@ export default function LiteWheel() {
           </div>
         )}
 
-        {/* Monthly prizes banner */}
-        {(() => {
-          const monthlyPrizes = config.prizes.filter((p) => (p.monthly_limit ?? 0) > 0);
-          if (monthlyPrizes.length === 0) return null;
-          return (
-            <div className={`${glassCard} px-4 py-3.5`}>
-              <div className="mb-2.5 inline-flex items-center gap-2 font-subo text-[14px] font-semibold text-subo-canary">
-                <span>🎁</span>
-                <span>Призы месяца</span>
-              </div>
-              <div className="space-y-1.5">
-                {monthlyPrizes.map((prize) => {
-                  const winner = prize.current_month_winner;
-                  const available = prize.is_available === true;
-                  let statusClass: string;
-                  let statusText: string;
-                  if (winner) {
-                    statusClass =
-                      'border-success-500/[0.30] bg-success-500/[0.10] text-success-400';
-                    statusText = `Выиграл(а) ${winner} ✅`;
-                  } else if (available) {
-                    statusClass =
-                      'border-subo-canary/[0.28] bg-subo-canary/[0.10] text-subo-canary';
-                    statusText = 'Ещё не разыгран! 🔥';
-                  } else {
-                    statusClass = 'border-white/[0.06] bg-white/[0.02] text-subo-textMute';
-                    statusText = 'Скоро...';
-                  }
-                  return (
-                    <div
-                      key={prize.id}
-                      className="flex items-center justify-between gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] p-2.5"
-                    >
-                      <div className="flex min-w-0 items-center gap-2.5">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center text-lg">
-                          {prize.emoji}
-                        </div>
-                        <div className="truncate font-subo text-[13px] font-medium text-subo-text">
-                          {prize.display_name}
-                        </div>
-                      </div>
-                      <div
-                        className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-0.5 font-subo text-[11px] font-medium ${statusClass}`}
-                      >
-                        {statusText}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })()}
-
         {/* Wheel card */}
         <div
           className={`${glassCard} relative overflow-hidden p-5`}
@@ -410,30 +313,63 @@ export default function LiteWheel() {
           )}
         </div>
 
-        {/* Prize legend (collapsible) */}
-        <div className={glassCard}>
-          <button
-            type="button"
-            onClick={() => setLegendExpanded((v) => !v)}
-            className="flex w-full cursor-pointer items-center justify-between rounded-2xl border-none bg-transparent px-4 py-3.5 text-left"
-          >
-            <span className="inline-flex items-center gap-2 font-subo text-[14px] font-semibold text-subo-text">
-              <span className="text-subo-canary">🏆</span>
-              {t('wheel.prizes')}
-              <span className="font-subo text-[12px] font-normal text-subo-textMute">
-                ({config.prizes.length})
-              </span>
-            </span>
-            <span className="text-subo-textMute">
-              <ChevronIcon expanded={legendExpanded} />
-            </span>
-          </button>
-          {legendExpanded && (
-            <div className="border-t border-white/[0.06] px-3 pb-3 pt-3">
-              <LiteLegend prizes={config.prizes} />
+        {/* Main prizes (always visible) */}
+        {(() => {
+          const mainPrizes = config.prizes.filter((p) => (p.monthly_limit ?? 0) > 0);
+          if (mainPrizes.length === 0) return null;
+          return (
+            <div className={`${glassCard} px-4 py-3.5`}>
+              <div className="mb-2.5 inline-flex items-center gap-2 font-subo text-[14px] font-semibold text-subo-text">
+                <span className="text-subo-canary">🏆</span>
+                <span>Главные призы</span>
+              </div>
+              <div className="space-y-1.5">
+                {mainPrizes.map((prize) => {
+                  const winner = prize.current_month_winner;
+                  const available = prize.is_available === true;
+                  let statusClass: string;
+                  let statusText: string;
+                  if (winner) {
+                    statusClass =
+                      'border-success-500/[0.30] bg-success-500/[0.10] text-success-400';
+                    statusText = `Выиграл(а) ${winner} ✅`;
+                  } else if (available) {
+                    statusClass =
+                      'border-subo-canary/[0.28] bg-subo-canary/[0.10] text-subo-canary';
+                    statusText = 'Ещё не разыгран 🔥';
+                  } else {
+                    statusClass = 'border-white/[0.06] bg-white/[0.02] text-subo-textMute';
+                    statusText = 'Скоро...';
+                  }
+                  return (
+                    <div
+                      key={prize.id}
+                      className="flex items-center justify-between gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] p-2.5"
+                    >
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center text-lg">
+                          {prize.emoji}
+                        </div>
+                        <div className="truncate font-subo text-[13px] font-medium text-subo-text">
+                          {prize.display_name}
+                        </div>
+                      </div>
+                      <div
+                        className={`shrink-0 whitespace-nowrap rounded-full border px-2.5 py-0.5 font-subo text-[11px] font-medium ${statusClass}`}
+                      >
+                        {statusText}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="mt-3 font-subo text-[11px] leading-snug text-subo-textMute">
+                При выигрыше главного приза вам будет выдан промокод. Обратитесь в поддержку для
+                получения приза.
+              </p>
             </div>
-          )}
-        </div>
+          );
+        })()}
 
         {/* History (collapsible) */}
         <div className={glassCard}>
@@ -492,6 +428,42 @@ export default function LiteWheel() {
                   {t('wheel.noHistory')}
                 </div>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* Rules (collapsible) */}
+        <div className={glassCard}>
+          <button
+            type="button"
+            onClick={() => setRulesExpanded((v) => !v)}
+            className="flex w-full cursor-pointer items-center justify-between rounded-2xl border-none bg-transparent px-4 py-3.5 text-left"
+          >
+            <span className="inline-flex items-center gap-2 font-subo text-[14px] font-semibold text-subo-text">
+              <span className="text-subo-canary">📋</span>
+              Правила
+            </span>
+            <span className="text-subo-textMute">
+              <ChevronIcon expanded={rulesExpanded} />
+            </span>
+          </button>
+
+          {rulesExpanded && (
+            <div className="border-t border-white/[0.06] px-4 pb-3 pt-1.5">
+              {[
+                '🎟 Билеты начисляются при покупке или продлении подписки (1 билет за каждые 30 дней)',
+                '🎡 Каждое вращение стоит 1 билет',
+                '🏆 Главные призы (iPhone, AirPods, PlayStation) разыгрываются по 1 штуке в месяц среди всех участников',
+                '🎁 При выигрыше главного приза выдаётся промокод — обратитесь в поддержку @subovpn_support для получения',
+                '⏰ Между вращениями минимальная пауза 3 секунды',
+              ].map((rule) => (
+                <div
+                  key={rule}
+                  className="py-1.5 font-subo text-[13px] leading-snug text-subo-textMute"
+                >
+                  {rule}
+                </div>
+              ))}
             </div>
           )}
         </div>
