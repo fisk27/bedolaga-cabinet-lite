@@ -37,6 +37,7 @@ export interface WheelConfig {
   has_subscription: boolean;
   eligible_subscriptions: EligibleSubscription[] | null;
   spin_tickets_balance: number;
+  raffle_tickets_balance: number;
 }
 
 export interface SpinAvailability {

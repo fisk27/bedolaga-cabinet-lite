@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { wheelApi } from '@/api/wheel';
+import { raffleApi, type RaffleTicket } from '@/api/raffle';
 import { LiteLayout } from '@/components/lite/LiteLayout';
 
 const glassCard =
@@ -17,14 +17,27 @@ const HOW_TO = [
   '🎟 Приглашаешь друга — получаешь тикет (друг должен оформить подписку)',
 ];
 
+const SOURCE_LABEL: Record<string, string> = {
+  subscription: 'За подписку',
+  referral: 'За реферала',
+};
+
+function sourceLabel(source: string): string {
+  return SOURCE_LABEL[source] ?? source;
+}
+
+function formatTicketNumber(num: number): string {
+  return `#${String(num).padStart(3, '0')}`;
+}
+
 export default function LiteGiveaway() {
-  const { data: config } = useQuery({
-    queryKey: ['wheel-config'],
-    queryFn: wheelApi.getConfig,
-    staleTime: 60_000,
+  const { data: ticketData } = useQuery({
+    queryKey: ['raffle-tickets'],
+    queryFn: raffleApi.getMyTickets,
   });
 
-  const tickets = config?.spin_tickets_balance ?? 0;
+  const tickets: RaffleTicket[] = ticketData?.tickets ?? [];
+  const ticketCount = tickets.length;
 
   return (
     <LiteLayout variant={{ title: 'Розыгрыш' }}>
@@ -91,13 +104,33 @@ export default function LiteGiveaway() {
           💥 Чем больше тикетов — тем выше шанс!
         </div>
 
-        {/* Current tickets */}
-        <div className={`${glassCard} flex items-center justify-between gap-3 px-4 py-3.5`}>
-          <span className="font-subo text-[14px] font-medium text-subo-textMute">У тебя:</span>
-          <span className="inline-flex items-center gap-1.5 font-subo text-[18px] font-bold tabular-nums text-subo-canaryHi">
-            {tickets}
-            <span className="text-[16px] leading-none">🎟</span>
-          </span>
+        {/* My tickets */}
+        <div className={`${glassCard} px-4 py-3.5`}>
+          <div className="mb-2.5 inline-flex items-center gap-2 font-subo text-[14px] font-semibold text-subo-text">
+            <span className="text-subo-canary">🎟</span>
+            <span>
+              Твои билеты <span className="font-normal text-subo-textMute">({ticketCount})</span>
+            </span>
+          </div>
+
+          {ticketCount === 0 ? (
+            <p className="py-1 font-subo text-[13px] leading-snug text-subo-textMute">
+              Пока нет билетов. Купи подписку или пригласи друга!
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {tickets.map((ticket) => (
+                <div key={ticket.ticket_number} className="flex flex-col items-center gap-1">
+                  <span className="rounded-full border border-subo-canary/[0.28] bg-subo-canary/[0.10] px-2.5 py-1 font-mono text-[13px] font-semibold tabular-nums text-subo-canaryHi">
+                    {formatTicketNumber(ticket.ticket_number)}
+                  </span>
+                  <span className="font-subo text-[10px] leading-none text-subo-textMute">
+                    {sourceLabel(ticket.source)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </LiteLayout>

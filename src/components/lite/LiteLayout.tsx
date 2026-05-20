@@ -73,7 +73,7 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
       navigate('/lite/giveaway');
     }
   };
-  const tickets = wheelConfig?.is_enabled ? (wheelConfig.spin_tickets_balance ?? 0) : null;
+  const tickets = wheelConfig?.is_enabled ? (wheelConfig.raffle_tickets_balance ?? 0) : null;
   const handleBack = useCallback(() => {
     const depth = parseInt(sessionStorage.getItem('lite-nav-depth') ?? '0', 10);
     if (depth <= 1) {
