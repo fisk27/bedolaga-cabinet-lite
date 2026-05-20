@@ -18,7 +18,7 @@ const HOW_TO = [
 ];
 
 const SOURCE_LABEL: Record<string, string> = {
-  subscription: 'За подписку',
+  purchase: 'За подписку',
   referral: 'За реферала',
 };
 
