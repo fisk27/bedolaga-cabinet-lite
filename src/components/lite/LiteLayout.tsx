@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth';
 import { useBranding } from '@/hooks/useBranding';
 import { balanceApi } from '@/api/balance';
+import { wheelApi } from '@/api/wheel';
 import { API } from '@/config/constants';
 import { LiteHeader } from './LiteHeader';
 import { FooterLinks } from './FooterLinks';
@@ -25,6 +26,11 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
     queryKey: ['balance'],
     queryFn: balanceApi.getBalance,
     staleTime: API.BALANCE_STALE_TIME_MS,
+  });
+  const { data: wheelConfig } = useQuery({
+    queryKey: ['wheel-config'],
+    queryFn: wheelApi.getConfig,
+    staleTime: 60_000,
   });
 
   const titleSuffix = variant === 'home' ? null : variant.title;
@@ -62,6 +68,12 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
       navigate('/lite/balance');
     }
   };
+  const handleTicketsClick = () => {
+    if (location.pathname !== '/lite/giveaway') {
+      navigate('/lite/giveaway');
+    }
+  };
+  const tickets = wheelConfig?.is_enabled ? (wheelConfig.spin_tickets_balance ?? 0) : null;
   const handleBack = useCallback(() => {
     const depth = parseInt(sessionStorage.getItem('lite-nav-depth') ?? '0', 10);
     if (depth <= 1) {
@@ -102,6 +114,8 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
             mode="home"
             user={{ initials, balance, photoUrl }}
             onBalanceClick={handleBalanceClick}
+            tickets={tickets}
+            onTicketsClick={handleTicketsClick}
           />
         ) : (
           <LiteHeader
@@ -110,6 +124,8 @@ export function LiteLayout({ variant, backFallback = '/lite', children }: LiteLa
             balance={balance}
             onBack={handleBack}
             onBalanceClick={handleBalanceClick}
+            tickets={tickets}
+            onTicketsClick={handleTicketsClick}
           />
         )}
         <main className="px-[22px]">{children}</main>

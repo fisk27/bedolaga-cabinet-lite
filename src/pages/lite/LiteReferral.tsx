@@ -44,7 +44,7 @@ export default function LiteReferral() {
     queryFn: referralApi.getReferralInfo,
   });
 
-  const referralLink = data?.referral_link ?? '';
+  const referralLink = data?.bot_referral_link ?? '';
   const totalReferrals = data?.total_referrals ?? 0;
 
   const handleCopy = async () => {
@@ -153,22 +153,6 @@ export default function LiteReferral() {
             <div className="rounded-full border border-subo-canary/[0.28] bg-subo-canary/[0.10] px-3 py-1 font-subo text-[14px] font-semibold tabular-nums text-subo-canaryHi">
               {totalReferrals}
             </div>
-          </div>
-        </div>
-
-        {/* Info card */}
-        <div className={`${glassCard} px-4 py-3.5`}>
-          <div className="mb-2.5 inline-flex items-center gap-2 font-subo text-[14px] font-semibold text-subo-text">
-            <span className="text-subo-canary">🎁</span>
-            <span>Как это работает</span>
-          </div>
-          <div className="space-y-1.5">
-            <p className="font-subo text-[13px] leading-snug text-subo-textMute">
-              🎟 Приведи друга — получи тикет на колесо фортуны!
-            </p>
-            <p className="font-subo text-[13px] leading-snug text-subo-textMute">
-              Твой друг тоже получит бонусный тикет при первой покупке подписки
-            </p>
           </div>
         </div>
       </div>

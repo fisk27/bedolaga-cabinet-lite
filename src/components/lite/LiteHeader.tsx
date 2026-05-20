@@ -1,6 +1,7 @@
 import { Avatar } from './Avatar';
 import { SuboLogo } from './SuboLogo';
 import { BalanceChip } from './BalanceChip';
+import { TicketsChip } from './TicketsChip';
 import { ArrowIcon } from './icons';
 
 type LiteHeaderProps =
@@ -8,6 +9,8 @@ type LiteHeaderProps =
       mode: 'home';
       user: { initials: string; balance: number; photoUrl?: string | null };
       onBalanceClick: () => void;
+      tickets?: number | null;
+      onTicketsClick?: () => void;
     }
   | {
       mode: 'inner';
@@ -15,6 +18,8 @@ type LiteHeaderProps =
       balance: number;
       onBack: () => void;
       onBalanceClick: () => void;
+      tickets?: number | null;
+      onTicketsClick?: () => void;
     };
 
 export function LiteHeader(props: LiteHeaderProps) {
@@ -44,7 +49,10 @@ export function LiteHeader(props: LiteHeaderProps) {
           )}
         </div>
 
-        <div className="relative z-10 flex shrink-0 items-center gap-1.5">
+        <div className="relative z-10 flex shrink-0 items-center gap-2">
+          {props.tickets != null && (
+            <TicketsChip count={props.tickets} onClick={props.onTicketsClick} />
+          )}
           {props.mode === 'home' ? (
             <BalanceChip amount={props.user.balance} onClick={props.onBalanceClick} />
           ) : (
