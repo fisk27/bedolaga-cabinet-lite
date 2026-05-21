@@ -7,7 +7,7 @@ const glassCard =
 
 const PRIZES = [
   '🥇 1 место — iPhone 17 Pro Max',
-  '🥈 2–25 места — 3 000 ₽',
+  '🥈 2–25 места — 1 000 ₽',
   '🥉 26–35 места — VPN на 1 месяц',
   '🎁 36–50 места — VPN на 2 недели',
 ];
@@ -80,7 +80,7 @@ export default function LiteGiveaway() {
           </div>
           <div className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-subo-canary/[0.25] bg-subo-canary/[0.08] px-3 py-2 font-subo text-[13px] font-medium text-subo-canary">
             <span>🗓</span>
-            <span>Итоги: 31.05.2026</span>
+            <span>Итоги: 14.06.2026</span>
           </div>
         </div>
 
