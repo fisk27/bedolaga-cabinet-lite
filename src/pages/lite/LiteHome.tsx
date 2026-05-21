@@ -59,6 +59,7 @@ function calcPeriod(start: string | undefined, end: string | undefined): string 
 interface LiteSub {
   daysLeft: number;
   isExpired: boolean;
+  isTrial: boolean;
   endDate: string;
   startDate?: string;
   trafficUsedGb: number;
@@ -97,6 +98,7 @@ export default function LiteHome() {
     subscription = {
       daysLeft: fullSub.days_left,
       isExpired: fullSub.is_expired,
+      isTrial: fullSub.is_trial,
       endDate: fullSub.end_date,
       startDate: fullSub.start_date,
       trafficUsedGb: fullSub.traffic_used_gb,
@@ -109,6 +111,7 @@ export default function LiteHome() {
     subscription = {
       daysLeft,
       isExpired: daysLeft <= 0,
+      isTrial: multiFirst.is_trial,
       endDate: multiFirst.end_date ?? '',
       trafficUsedGb: multiFirst.traffic_used_gb,
       trafficLimitGb: multiFirst.traffic_limit_gb,
@@ -185,7 +188,13 @@ export default function LiteHome() {
   const onSelectTariff = () => navigate('/lite/tariffs');
   const onTrial = () => activateTrial.mutate();
   const onConnect = () => navigate('/lite/connect');
-  const onRenew = () => navigate('/lite/renew');
+  const onRenew = () => {
+    if (subscription?.isTrial) {
+      navigate('/lite/tariffs');
+    } else {
+      navigate('/lite/renew');
+    }
+  };
   const onTariffChange = () => navigate('/lite/tariffs');
   const onDevices = () => navigate('/lite/devices');
 
@@ -224,6 +233,7 @@ export default function LiteHome() {
             endDate={formatRussianDate(subscription.endDate)}
             onConnect={onConnect}
             onRenew={onRenew}
+            isTrial={subscription.isTrial}
           />
           <TrafficCard usedGb={subscription.trafficUsedGb} totalGb={subscription.trafficLimitGb} />
           <button
@@ -248,6 +258,7 @@ export default function LiteHome() {
             endDate={formatRussianDate(subscription.endDate)}
             onConnect={onConnect}
             onRenew={onRenew}
+            isTrial={subscription.isTrial}
           />
           <TrafficCard usedGb={subscription.trafficUsedGb} totalGb={subscription.trafficLimitGb} />
           <button

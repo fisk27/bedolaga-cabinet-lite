@@ -8,9 +8,16 @@ interface HeroCardActiveProps {
   endDate: string;
   onConnect: () => void;
   onRenew: () => void;
+  isTrial?: boolean;
 }
 
-export function HeroCardActive({ daysLeft, endDate, onConnect, onRenew }: HeroCardActiveProps) {
+export function HeroCardActive({
+  daysLeft,
+  endDate,
+  onConnect,
+  onRenew,
+  isTrial = false,
+}: HeroCardActiveProps) {
   return (
     <div
       className={[
@@ -44,7 +51,7 @@ export function HeroCardActive({ daysLeft, endDate, onConnect, onRenew }: HeroCa
           <PrimaryButton onClick={onConnect}>Подключить устройство</PrimaryButton>
         </div>
         <div className="mt-2.5">
-          <GhostButton onClick={onRenew}>Продлить</GhostButton>
+          <GhostButton onClick={onRenew}>{isTrial ? 'Купить подписку' : 'Продлить'}</GhostButton>
         </div>
       </div>
     </div>

@@ -8,9 +8,16 @@ interface HeroCardExpiringProps {
   endDate: string;
   onConnect: () => void;
   onRenew: () => void;
+  isTrial?: boolean;
 }
 
-export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: HeroCardExpiringProps) {
+export function HeroCardExpiring({
+  daysLeft,
+  endDate,
+  onConnect,
+  onRenew,
+  isTrial = false,
+}: HeroCardExpiringProps) {
   const wordOnly = daysLeft === 0 ? 'Сегодня' : daysLeft === 1 ? 'Завтра' : null;
 
   return (
@@ -54,7 +61,7 @@ export function HeroCardExpiring({ daysLeft, endDate, onConnect, onRenew }: Hero
 
         <div className="mt-[22px]">
           <PrimaryButton pulse onClick={onRenew}>
-            Продлить сейчас
+            {isTrial ? 'Купить подписку' : 'Продлить сейчас'}
           </PrimaryButton>
         </div>
         <div className="mt-2.5">
